@@ -130,3 +130,7 @@ dotnet_naming_rule.locals_params_camel.severity = warning
 [backend/tests/**/*.cs]
 dotnet_diagnostic.CA1707.severity = none
 dotnet_diagnostic.CA1515.severity = none
+
+# Migraciones generadas por EF Core: no se les aplica el estilo del proyecto
+[backend/src/DomoNow.Parking.Infrastructure/Persistence/Migrations/*.cs]
+generated_code = true

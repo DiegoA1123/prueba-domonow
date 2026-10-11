@@ -5,9 +5,9 @@
 
 ## Estado actual
 
-**Fase**: 0 — Definición de forma de trabajo (sin proyectos creados)
-**Último paso**: Decisiones de diseño cerradas con el usuario (auth JWT, placa estricta, hora de salida, BD de tests); ADR-0004; AI-USAGE con 7 registros reales; README con supuestos.
-**Siguiente paso**: Usuario revisa el plan `docs/plans/2026-10-10-backend-implementation.md` y R7 (ADR-0005, AI-USAGE #8) y elige modo de ejecución → Fase 1 Task 1.
+**Fase**: 1 — Backend implementado (rama `feat/backend`), pendiente revisión final y merge
+**Último paso**: Plan de backend ejecutado (10 tasks, TDD). Revisión final independiente hecha: 4 hallazgos importantes corregidos con TDD. **82/82 tests** (43 dominio, 14 aplicación, 25 integración contra PostgreSQL).
+**Siguiente paso**: Revisión y merge del PR #1 (https://github.com/DiegoA1123/prueba-domonow/pull/1) → Fase 2 (frontend).
 
 ## Tablero
 
@@ -21,15 +21,16 @@
 | 0 | Identidad Git (local: Diego Andres) + primer commit `d6d9997` | ✅ |
 | 0 | Decisiones de diseño cerradas + ADR-0004 (JWT) + AI-USAGE inicial + README supuestos | ✅ |
 | 0 | Revisión del usuario: límite del agregado (ADR-0003) — aprobado | ✅ |
-| 1 | Plan de implementación backend (10 tasks) — `docs/plans/2026-10-10-backend-implementation.md` | ✅ (pendiente revisión) |
+| 1 | Plan de implementación backend (10 tasks) — `docs/plans/2026-10-10-backend-implementation.md` | ✅ ejecutado |
 | 1 | R7: placa única activa (ADR-0005) | ✅ diseño |
-| 1 | Backend: solución + 4 proyectos + 3 de tests | ⬜ |
-| 1 | Dominio: ParkingSpot, ParkingAssignment, LicensePlate (TDD R1–R5) | ⬜ |
-| 1 | Application: casos de uso CheckIn, CheckOut, GetSpots, GetActive | ⬜ |
-| 1 | Infrastructure: DbContext, configuraciones, índice parcial, xmin, migración, seed | ⬜ |
-| 1 | Api: endpoints, ProblemDetails, CORS, OpenAPI | ⬜ |
-| 1 | Autenticación: login JWT, operadores (hash), roles, user-secrets (ADR-0004) | ⬜ |
-| 1 | Test de integración de concurrencia (R6) | ⬜ |
+| 1 | Backend: solución + 4 proyectos + 3 de tests | ✅ |
+| 1 | Dominio: ParkingSpot, ParkingAssignment, LicensePlate (TDD R1–R5) | ✅ |
+| 1 | Application: casos de uso CheckIn, CheckOut, GetSpots, GetActive | ✅ |
+| 1 | Infrastructure: DbContext, configuraciones, índice parcial, xmin, migración, seed | ✅ |
+| 1 | Api: endpoints, ProblemDetails, CORS, OpenAPI | ✅ |
+| 1 | Autenticación: login JWT, operadores (hash), roles, user-secrets (ADR-0004) | ✅ |
+| 1 | Test de integración de concurrencia (R6) | ✅ |
+| 1 | Revisión final de la rama + merge a main | ⏳ |
 | 2 | Frontend: proyecto Angular + estructura hexagonal | ⬜ |
 | 2 | Login + interceptor JWT + guard | ⬜ |
 | 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ⬜ |
@@ -65,6 +66,7 @@ Ninguna. (Límite del agregado aprobado por el usuario el 2026-10-10 → AI-USAG
 ## Ideas para README § "Evolución de la solución" (se redactan al final)
 
 - **Concurrencia**: mantener optimista (`xmin`) + índices parciales; la contención por parqueadero no crece con el número de propiedades, solo el volumen. `SELECT … FOR UPDATE` evaluado y descartado para asignación manual; usar `FOR UPDATE SKIP LOCKED` si se agrega "asignar automáticamente el primer libre" (muchas solicitudes compiten por las mismas filas). (AI-USAGE #10)
+- **Rate limiting detrás de proxy**: `ForwardedHeaders` para particionar por IP real; a escala, rate limiting en el API gateway.
 - **Multi-tenancy**: particionar por propiedad → la contención queda local a cada propiedad.
 - **Mensajería**: domain events + outbox (ver ADR-0003, no implementados hoy).
 - **Seguridad**: OIDC externo / refresh tokens (ver ADR-0004).
@@ -103,3 +105,32 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Autorrevisión del plan**: corregidos datos de test compartidos (AAA444 provocaría 409 en vez de 422), test dependiente del orden, `using` faltante del rate limiter, captura de excepciones del UnitOfWork (filtros `when` por restricción), `!` → `ShouldNotBeNull()`. Registrado en AI-USAGE #9.
 - **Verificación**: N/A (documentación).
 - **Siguiente**: revisión del plan por el usuario + modo de ejecución.
+
+### 2026-10-10 — Fase 1: backend implementado (rama `feat/backend`)
+- **Qué**: Ejecutado el plan completo (10 tasks) con TDD: scaffold → kernel + VOs → agregado → casos de uso → login → persistencia → identidad/seed → API → tests de integración → docs.
+- **Commits**: `100eaed` scaffold · `b661e5c` dominio VOs · `4cfd17e` agregado · `5ff9db2` casos de uso · `22f0cb0` login · `2adcd42` persistencia · `7a03245` identidad/seed · `43a04f0` API · `7ab4f55` fix EF · `a2a5a61` fix 400 · `c5822cc` tests de integración.
+- **Bugs encontrados al verificar** (no los detectaron los tests unitarios):
+  1. EF hacía `UPDATE` en lugar de `INSERT` para asignaciones nuevas (claves Guid asumidas como generadas por BD) → falso 409. Fix: `ValueGeneratedNever()`; migración inicial regenerada. AI-USAGE #11.
+  2. JSON inválido → 500 en Development. Fix: `BadHttpRequestException` → 400. AI-USAGE #12.
+  3. Tests de integración disparaban el rate limit del login (defecto del test, no del producto) → token cacheado por corrida. AI-USAGE #13.
+- **Desviaciones del plan** (registradas en el ledger): manifiesto de herramientas en `backend/dotnet-tools.json` (.NET 10); `<param>` extra en `CheckOutCommand`; `ReadAsync<T> where T : class`; `ApiCollection`→`ApiTestGroup` (CA1711); tests extra: filtro por estado y JSON inválido.
+- **Secretos**: cadena de conexión, clave JWT y operador de prueba en `dotnet user-secrets` (Api y tests); contraseña del operador de prueba en `postgres-dev-credentials.txt` (ignorado por Git).
+- **Verificación**: `dotnet build` → 0 advertencias, 0 errores. `dotnet test` → 42/42 + 14/14 + 18/18 = **74/74**. Tests de concurrencia 5/5 corridas estables. Prueba de humo manual: 401 sin token, login, 30 parqueaderos con P04/P17 fuera de servicio.
+- **Siguiente**: revisión final independiente → merge con aprobación del usuario → frontend.
+
+### 2026-10-10 — Fase 1: revisión final independiente del backend
+- **Qué**: Agente revisor con contexto nuevo (Opus) revisó los 12 commits contra plan, spec y Review Focus. Resultado: 0 críticos, 4 importantes, 4 menores. Arquitectura y concurrencia (R1/R6/R7) validadas sin cambios.
+- **Corregidos con TDD** (commits `6a33088`, `d33773d`, `9dfccdf`):
+  1. `checkedOutAt` con offset (-05:00) → 500 (Npgsql exige UTC). Fix: normalizar a UTC en el dominio.
+  2. Rate limit de login global → un cliente bloqueaba a todos. Fix: partición por IP (test verificado en rojo contra el código anterior).
+  3. Faltaban tests 401/403 en escritura → 4 tests nuevos (token ausente, otra firma, vencido, sin rol).
+  4. Salida concurrente devolvía el mensaje de check-in → nuevo error neutro `Parking.ConcurrentModification`.
+- **Diferidos (menores)**: lectura en 2 consultas, validación de `?status=` y `parkingSpotId`, HTTPS/HSTS, test de doble salida vía API → README § Mejoras.
+- **Verificación**: `dotnet build` 0 advertencias; `dotnet test` **82/82** (43 + 14 + 25).
+- **Siguiente**: merge a `main` con aprobación del usuario.
+
+### 2026-10-11 — Repositorio remoto y Pull Request del backend
+- **Qué**: GitHub CLI 2.102.0 instalado; sesión del usuario (`DiegoA1123`) iniciada por él con `gh auth login --web`. Repositorio **privado** creado: https://github.com/DiegoA1123/prueba-domonow. Subidas `main` y `feat/backend`.
+- **PR**: https://github.com/DiegoA1123/prueba-domonow/pull/1 (`feat/backend` → `main`), estado MERGEABLE. Sin CI configurado (no hay checks).
+- **Verificación**: escaneo previo al push — ninguna contraseña local presente en archivos versionados ni en el historial.
+- **Siguiente**: el usuario revisa y aprueba el merge del PR → Fase 2 (frontend).

@@ -19,11 +19,38 @@ Solución Full Stack para la prueba técnica de OFIMA SAS: registrar el ingreso 
 
 ## Configurar la base de datos
 
-_Pendiente._
+1. Tener PostgreSQL 17 corriendo en `localhost:5432`.
+2. Configurar los secretos de desarrollo con `dotnet user-secrets` (no se versionan):
+
+   ```bash
+   cd backend
+   dotnet user-secrets set "ConnectionStrings:Parking" "Host=localhost;Port=5432;Database=domonow_parking;Username=postgres;Password=<tu-password>" --project src/DomoNow.Parking.Api
+   dotnet user-secrets set "Jwt:SigningKey" "<clave aleatoria de 32+ bytes>" --project src/DomoNow.Parking.Api
+   dotnet user-secrets set "SeedOperator:Username" "portero" --project src/DomoNow.Parking.Api
+   dotnet user-secrets set "SeedOperator:Password" "<password del operador de prueba>" --project src/DomoNow.Parking.Api
+   ```
+
+   Una clave aleatoria se puede generar con `openssl rand -base64 48`.
+3. Al arrancar en Development la API aplica las migraciones y siembra 30 parqueaderos (`P04` y `P17` fuera de servicio) y el operador de prueba. No hace falta crear la base de datos a mano.
 
 ## Ejecutar el backend
 
-_Pendiente._
+```bash
+dotnet run --project backend/src/DomoNow.Parking.Api --launch-profile http
+```
+
+- API en `http://localhost:5080`; documento OpenAPI en `http://localhost:5080/openapi/v1.json`.
+- Obtener un token: `POST /api/auth/login` con `{ "username": "portero", "password": "<password>" }` y enviarlo como `Authorization: Bearer <token>`.
+
+| Método | Ruta | Autorización | Descripción |
+|--------|------|--------------|-------------|
+| POST | `/api/auth/login` | Anónimo (máx. 10/min por IP) | Inicia sesión y devuelve un JWT |
+| GET | `/api/parking-spots?status=Available` | Autenticado | Parqueaderos con estado, disponibilidad y vehículo actual; filtro opcional por estado |
+| GET | `/api/parking-assignments/active` | Autenticado | Vehículos que están dentro de la propiedad |
+| POST | `/api/parking-assignments` | Rol `Operator` | Registra un ingreso `{ parkingSpotId, licensePlate, visitorName, destinationUnit }` |
+| PUT | `/api/parking-assignments/{id}/checkout` | Rol `Operator` | Registra la salida; cuerpo opcional `{ checkedOutAt }` |
+
+Los errores siguen RFC 9457 (ProblemDetails) con un campo `code` estable (`Parking.SpotOccupied`, `Parking.VehicleAlreadyInside`…) y un mensaje en español: 400 validación · 401 sin sesión · 403 sin rol · 404 no encontrado · 409 conflicto · 422 regla de negocio.
 
 ## Ejecutar el frontend
 
@@ -31,7 +58,18 @@ _Pendiente._
 
 ## Ejecutar las pruebas
 
-_Pendiente._
+```bash
+dotnet user-secrets set "ConnectionStrings:ParkingTests" "Host=localhost;Port=5432;Database=domonow_parking_tests;Username=postgres;Password=<tu-password>" --project backend/tests/DomoNow.Parking.Api.IntegrationTests
+dotnet test backend/DomoNow.Parking.slnx
+```
+
+| Proyecto | Qué prueba | Tests |
+|----------|-----------|-------|
+| `Domain.UnitTests` | Value objects y agregado `ParkingSpot`: reglas R1–R5 sin base de datos | 43 |
+| `Application.UnitTests` | Casos de uso con puertos falsos: R7, errores de validación, login | 14 |
+| `Api.IntegrationTests` | API completa contra PostgreSQL real: autenticación (401/403, token vencido o con otra firma, rate limit por IP), flujos, errores y **concurrencia** (20 ingresos simultáneos al mismo parqueadero → exactamente 1 éxito; misma placa en 2 parqueaderos a la vez → 1 éxito; 10 salidas simultáneas → 1 éxito) | 25 |
+
+Las pruebas de integración recrean la base `domonow_parking_tests` en cada corrida. No se usan SQLite ni InMemory porque no reproducen `xmin`, los índices parciales ni la concurrencia real.
 
 ## Decisiones de arquitectura
 
@@ -41,6 +79,7 @@ Resumen en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); decisiones formales e
 - **Clean Architecture + Hexagonal**, versión pragmática (ADR-0001).
 - **Concurrencia** garantizada en la base de datos con índice único parcial + concurrencia optimista (ADR-0002).
 - **Autenticación JWT** con operadores y roles; la identidad es un subdominio genérico fuera del dominio `Parking` (ADR-0004).
+- **Regla adicional R7**: una placa no puede ingresar dos veces sin haber salido; como cruza agregados, se protege en el caso de uso y con un índice único parcial por placa (ADR-0005).
 
 ## Supuestos
 
@@ -54,7 +93,12 @@ Resumen en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); decisiones formales e
 
 ## Qué mejoraría con más tiempo
 
-_Pendiente._
+Backend (hallazgos menores de la revisión con IA, conscientemente diferidos):
+
+- Leer parqueaderos y asignaciones activas en **una sola consulta** (hoy son dos; un ingreso entre ambas puede mostrar por un instante un parqueadero ocupado sin placa).
+- Validar explícitamente el filtro `?status=` (hoy `?status=7` devuelve lista vacía) y exigir `parkingSpotId` en el cuerpo (hoy su ausencia da 404 en lugar de 400).
+- HTTPS/HSTS fuera de Development, o documentar la terminación TLS en el proxy; detrás de un proxy, `ForwardedHeaders` para que el rate limit por IP vea la IP real.
+- Refresh tokens y revocación; endpoint de cancelación de asignaciones; volver a poner en servicio un parqueadero.
 
 ## Evolución de la solución
 

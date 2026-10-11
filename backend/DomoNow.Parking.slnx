@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DomoNow.Parking.Api/DomoNow.Parking.Api.csproj" />
+    <Project Path="src/DomoNow.Parking.Application/DomoNow.Parking.Application.csproj" />
+    <Project Path="src/DomoNow.Parking.Domain/DomoNow.Parking.Domain.csproj" />
+    <Project Path="src/DomoNow.Parking.Infrastructure/DomoNow.Parking.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DomoNow.Parking.Api.IntegrationTests/DomoNow.Parking.Api.IntegrationTests.csproj" />
+    <Project Path="tests/DomoNow.Parking.Application.UnitTests/DomoNow.Parking.Application.UnitTests.csproj" />
+    <Project Path="tests/DomoNow.Parking.Domain.UnitTests/DomoNow.Parking.Domain.UnitTests.csproj" />
+  </Folder>
+</Solution>
