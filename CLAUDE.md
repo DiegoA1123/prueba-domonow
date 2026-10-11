@@ -47,12 +47,15 @@ Decisiones cerradas con el usuario (2026-10-10): **JWT + operador de prueba** (A
 
 ## 5. Comandos
 
-> Se completan a medida que se crean los proyectos.
+> En Git Bash, anteponer `export PATH="/c/Program Files/dotnet:$PATH"` si `dotnet` no está en el PATH de la sesión.
 
 ```bash
-# Backend
+# Backend (verificados 2026-10-10)
 dotnet build backend/DomoNow.Parking.slnx
 dotnet test backend/DomoNow.Parking.slnx
+dotnet run --project backend/src/DomoNow.Parking.Api --launch-profile http        # http://localhost:5080
+cd backend && dotnet tool run dotnet-ef migrations add <Nombre> -p src/DomoNow.Parking.Infrastructure -s src/DomoNow.Parking.Api -o Persistence/Migrations
+cd backend && dotnet tool run dotnet-ef database update -p src/DomoNow.Parking.Infrastructure -s src/DomoNow.Parking.Api
 
 # Frontend
 cd frontend && npm start

@@ -5,9 +5,9 @@
 
 ## Estado actual
 
-**Fase**: 0 — Definición de forma de trabajo (sin proyectos creados)
-**Último paso**: Decisiones de diseño cerradas con el usuario (auth JWT, placa estricta, hora de salida, BD de tests); ADR-0004; AI-USAGE con 7 registros reales; README con supuestos.
-**Siguiente paso**: Usuario revisa el plan `docs/plans/2026-10-10-backend-implementation.md` y R7 (ADR-0005, AI-USAGE #8) y elige modo de ejecución → Fase 1 Task 1.
+**Fase**: 1 — Backend implementado (rama `feat/backend`), pendiente revisión final y merge
+**Último paso**: Plan de backend ejecutado (10 tasks, TDD). 74/74 tests en verde (42 dominio, 14 aplicación, 18 integración contra PostgreSQL). 2 bugs detectados en verificación y corregidos (AI-USAGE #11, #12).
+**Siguiente paso**: Revisión final independiente de la rama (code-reviewer) → aprobación del usuario → merge `feat/backend` a `main` → Fase 2 (frontend).
 
 ## Tablero
 
@@ -21,15 +21,16 @@
 | 0 | Identidad Git (local: Diego Andres) + primer commit `d6d9997` | ✅ |
 | 0 | Decisiones de diseño cerradas + ADR-0004 (JWT) + AI-USAGE inicial + README supuestos | ✅ |
 | 0 | Revisión del usuario: límite del agregado (ADR-0003) — aprobado | ✅ |
-| 1 | Plan de implementación backend (10 tasks) — `docs/plans/2026-10-10-backend-implementation.md` | ✅ (pendiente revisión) |
+| 1 | Plan de implementación backend (10 tasks) — `docs/plans/2026-10-10-backend-implementation.md` | ✅ ejecutado |
 | 1 | R7: placa única activa (ADR-0005) | ✅ diseño |
-| 1 | Backend: solución + 4 proyectos + 3 de tests | ⬜ |
-| 1 | Dominio: ParkingSpot, ParkingAssignment, LicensePlate (TDD R1–R5) | ⬜ |
-| 1 | Application: casos de uso CheckIn, CheckOut, GetSpots, GetActive | ⬜ |
-| 1 | Infrastructure: DbContext, configuraciones, índice parcial, xmin, migración, seed | ⬜ |
-| 1 | Api: endpoints, ProblemDetails, CORS, OpenAPI | ⬜ |
-| 1 | Autenticación: login JWT, operadores (hash), roles, user-secrets (ADR-0004) | ⬜ |
-| 1 | Test de integración de concurrencia (R6) | ⬜ |
+| 1 | Backend: solución + 4 proyectos + 3 de tests | ✅ |
+| 1 | Dominio: ParkingSpot, ParkingAssignment, LicensePlate (TDD R1–R5) | ✅ |
+| 1 | Application: casos de uso CheckIn, CheckOut, GetSpots, GetActive | ✅ |
+| 1 | Infrastructure: DbContext, configuraciones, índice parcial, xmin, migración, seed | ✅ |
+| 1 | Api: endpoints, ProblemDetails, CORS, OpenAPI | ✅ |
+| 1 | Autenticación: login JWT, operadores (hash), roles, user-secrets (ADR-0004) | ✅ |
+| 1 | Test de integración de concurrencia (R6) | ✅ |
+| 1 | Revisión final de la rama + merge a main | ⏳ |
 | 2 | Frontend: proyecto Angular + estructura hexagonal | ⬜ |
 | 2 | Login + interceptor JWT + guard | ⬜ |
 | 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ⬜ |
@@ -103,3 +104,15 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Autorrevisión del plan**: corregidos datos de test compartidos (AAA444 provocaría 409 en vez de 422), test dependiente del orden, `using` faltante del rate limiter, captura de excepciones del UnitOfWork (filtros `when` por restricción), `!` → `ShouldNotBeNull()`. Registrado en AI-USAGE #9.
 - **Verificación**: N/A (documentación).
 - **Siguiente**: revisión del plan por el usuario + modo de ejecución.
+
+### 2026-10-10 — Fase 1: backend implementado (rama `feat/backend`)
+- **Qué**: Ejecutado el plan completo (10 tasks) con TDD: scaffold → kernel + VOs → agregado → casos de uso → login → persistencia → identidad/seed → API → tests de integración → docs.
+- **Commits**: `100eaed` scaffold · `b661e5c` dominio VOs · `4cfd17e` agregado · `5ff9db2` casos de uso · `22f0cb0` login · `2adcd42` persistencia · `7a03245` identidad/seed · `43a04f0` API · `7ab4f55` fix EF · `a2a5a61` fix 400 · `c5822cc` tests de integración.
+- **Bugs encontrados al verificar** (no los detectaron los tests unitarios):
+  1. EF hacía `UPDATE` en lugar de `INSERT` para asignaciones nuevas (claves Guid asumidas como generadas por BD) → falso 409. Fix: `ValueGeneratedNever()`; migración inicial regenerada. AI-USAGE #11.
+  2. JSON inválido → 500 en Development. Fix: `BadHttpRequestException` → 400. AI-USAGE #12.
+  3. Tests de integración disparaban el rate limit del login (defecto del test, no del producto) → token cacheado por corrida. AI-USAGE #13.
+- **Desviaciones del plan** (registradas en el ledger): manifiesto de herramientas en `backend/dotnet-tools.json` (.NET 10); `<param>` extra en `CheckOutCommand`; `ReadAsync<T> where T : class`; `ApiCollection`→`ApiTestGroup` (CA1711); tests extra: filtro por estado y JSON inválido.
+- **Secretos**: cadena de conexión, clave JWT y operador de prueba en `dotnet user-secrets` (Api y tests); contraseña del operador de prueba en `postgres-dev-credentials.txt` (ignorado por Git).
+- **Verificación**: `dotnet build` → 0 advertencias, 0 errores. `dotnet test` → 42/42 + 14/14 + 18/18 = **74/74**. Tests de concurrencia 5/5 corridas estables. Prueba de humo manual: 401 sin token, login, 30 parqueaderos con P04/P17 fuera de servicio.
+- **Siguiente**: revisión final independiente → merge con aprobación del usuario → frontend.
