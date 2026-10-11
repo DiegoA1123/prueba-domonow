@@ -34,16 +34,19 @@
         (checkOut)="confirmCheckOut($event)"
       />
     } @empty {
-      @if (!store.isInitialLoading()) {
+      @if (store.loadState() === 'ready') {
         <p class="board__empty">No hay parqueaderos con este estado.</p>
       }
     }
   </div>
 
-  <section class="board__active" aria-labelledby="active-vehicles-title">
-    <h2 id="active-vehicles-title" class="board__section-title">
-      Vehículos dentro ({{ store.activeAssignments().length }})
-    </h2>
-    <app-active-vehicles-table [assignments]="store.activeAssignments()" [now]="store.now()" />
-  </section>
+  <!-- Si nunca se pudo cargar, no se afirma que "no hay vehículos dentro": no se sabe. -->
+  @if (store.loadState() === 'ready') {
+    <section class="board__active" aria-labelledby="active-vehicles-title">
+      <h2 id="active-vehicles-title" class="board__section-title">
+        Vehículos dentro ({{ store.activeAssignments().length }})
+      </h2>
+      <app-active-vehicles-table [assignments]="store.activeAssignments()" [now]="store.now()" />
+    </section>
+  }
 </section>

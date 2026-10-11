@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Injector, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -33,6 +33,12 @@ export class ParkingBoardPage {
   readonly #dialog = inject(MatDialog);
   readonly #injector = inject(Injector);
   readonly #notifier = inject(Notifier);
+
+  constructor() {
+    // MatDialog no cierra sus diálogos con router.navigate: si un 401 lleva al login,
+    // los diálogos de esta página no deben quedar encima de la pantalla de ingreso.
+    inject(DestroyRef).onDestroy(() => this.#dialog.closeAll());
+  }
 
   protected async openCheckIn(spot: ParkingSpot): Promise<void> {
     // El injector de la página permite que el diálogo use el mismo ParkingStore.
