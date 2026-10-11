@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { Observable, Subject, of, throwError } from 'rxjs';
+import { NEVER, Observable, Subject, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import {
   ActiveAssignment,
@@ -9,7 +9,7 @@ import {
   ParkingSpotStatus,
 } from '../domain/parking.models';
 import { ParkingRepository } from '../domain/parking.repository';
-import { POLL_INTERVAL_MS, ParkingStore } from './parking.store';
+import { LOAD_TIMEOUT_MS, POLL_INTERVAL_MS, ParkingStore } from './parking.store';
 
 const assignment = (spotId: string, plate: string): ActiveAssignment => ({
   assignmentId: `a-${spotId}`,
@@ -36,7 +36,10 @@ class FakeParkingRepository extends ParkingRepository {
   ];
   spotsResponse: () => Observable<ParkingSpot[]> = () => of(this.spots);
   checkInResponse: Observable<ActiveAssignment> = of(assignment('p01', 'ABC123'));
+  checkOutResponse: Observable<void> = of(undefined);
   getSpotsCalls = 0;
+  checkInCalls = 0;
+  checkedOutIds: string[] = [];
 
   getSpots(): Observable<ParkingSpot[]> {
     this.getSpotsCalls++;
@@ -48,11 +51,13 @@ class FakeParkingRepository extends ParkingRepository {
   }
 
   checkIn(): Observable<ActiveAssignment> {
+    this.checkInCalls++;
     return this.checkInResponse;
   }
 
-  checkOut(): Observable<void> {
-    return of(undefined);
+  checkOut(assignmentId: string): Observable<void> {
+    this.checkedOutIds.push(assignmentId);
+    return this.checkOutResponse;
   }
 }
 
@@ -180,5 +185,52 @@ describe('ParkingStore', () => {
       },
     });
     expect(store.busySpotIds().size).toBe(0);
+  });
+
+  it('refreshes the board after a rejected action so the operator sees the real state', async () => {
+    await vi.advanceTimersByTimeAsync(0);
+    repository.checkInResponse = throwError(
+      () => new HttpErrorResponse({ status: 409, error: { code: 'Parking.SpotOccupied' } }),
+    );
+
+    await store.checkIn(request);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(repository.getSpotsCalls).toBe(2);
+  });
+
+  it('checks out the given assignment and refreshes the board', async () => {
+    await vi.advanceTimersByTimeAsync(0);
+
+    const result = await store.checkOut('p02', 'a-p02');
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(result).toEqual({ ok: true });
+    expect(repository.checkedOutIds).toEqual(['a-p02']);
+    expect(repository.getSpotsCalls).toBe(2);
+  });
+
+  it('ignores a second action on the same spot while the first is still in flight', async () => {
+    await vi.advanceTimersByTimeAsync(0);
+    const response = new Subject<ActiveAssignment>();
+    repository.checkInResponse = response;
+
+    const first = store.checkIn(request);
+    const second = await store.checkIn(request);
+
+    expect(repository.checkInCalls).toBe(1);
+    expect(second.ok).toBe(false);
+    response.next(assignment('p01', 'ABC123'));
+    response.complete();
+    await expect(first).resolves.toEqual({ ok: true });
+  });
+
+  it('reports a hung API instead of waiting forever', async () => {
+    repository.spotsResponse = () => NEVER;
+
+    await vi.advanceTimersByTimeAsync(LOAD_TIMEOUT_MS);
+
+    expect(store.loadState()).toBe('error');
+    expect(store.loadError()?.message).toContain('tarda demasiado');
   });
 });

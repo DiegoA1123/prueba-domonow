@@ -15,6 +15,8 @@ import {
   of,
   startWith,
   switchMap,
+  timeout,
+  TimeoutError,
   timer,
 } from 'rxjs';
 import { ApiError, toApiError } from '../../../core/http/api-error';
@@ -29,6 +31,19 @@ import {
 import { ParkingRepository } from '../domain/parking.repository';
 
 export const POLL_INTERVAL_MS = 30_000;
+export const LOAD_TIMEOUT_MS = 10_000;
+
+const SLOW_SERVER_ERROR: ApiError = {
+  status: -1,
+  code: null,
+  message: 'El servidor tarda demasiado en responder. Se reintentará automáticamente.',
+};
+
+const ACTION_IN_PROGRESS_ERROR: ApiError = {
+  status: -1,
+  code: null,
+  message: 'Ya hay una operación en curso para este parqueadero.',
+};
 
 export type ActionResult = { readonly ok: true } | { readonly ok: false; readonly error: ApiError };
 
@@ -110,11 +125,11 @@ export class ParkingStore {
   }
 
   checkIn(request: CheckInRequest): Promise<ActionResult> {
-    return this.#runForSpot(request.parkingSpotId, this.#repository.checkIn(request));
+    return this.#runForSpot(request.parkingSpotId, () => this.#repository.checkIn(request));
   }
 
   checkOut(spotId: string, assignmentId: string): Promise<ActionResult> {
-    return this.#runForSpot(spotId, this.#repository.checkOut(assignmentId));
+    return this.#runForSpot(spotId, () => this.#repository.checkOut(assignmentId));
   }
 
   #loadSnapshot(): Observable<Snapshot> {
@@ -122,8 +137,15 @@ export class ParkingStore {
       spots: this.#repository.getSpots(),
       active: this.#repository.getActiveAssignments(),
     }).pipe(
+      // Una API colgada no debe dejar el tablero viejo sin aviso.
+      timeout(LOAD_TIMEOUT_MS),
       map(({ spots, active }): Snapshot => ({ ok: true, spots, active })),
-      catchError((error: unknown) => of<Snapshot>({ ok: false, error: toApiError(error) })),
+      catchError((error: unknown) =>
+        of<Snapshot>({
+          ok: false,
+          error: error instanceof TimeoutError ? SLOW_SERVER_ERROR : toApiError(error),
+        }),
+      ),
     );
   }
 
@@ -142,10 +164,14 @@ export class ParkingStore {
     this.#loadState.set(this.#spots().length === 0 ? 'error' : 'ready');
   }
 
-  async #runForSpot(spotId: string, action$: Observable<unknown>): Promise<ActionResult> {
+  async #runForSpot(spotId: string, action: () => Observable<unknown>): Promise<ActionResult> {
+    // Garantía de una sola petición por parqueadero, aunque el botón aún no se haya deshabilitado.
+    if (this.#busySpotIds().has(spotId)) {
+      return { ok: false, error: ACTION_IN_PROGRESS_ERROR };
+    }
     this.#busySpotIds.update((ids) => new Set(ids).add(spotId));
     try {
-      await firstValueFrom(action$, { defaultValue: undefined });
+      await firstValueFrom(action(), { defaultValue: undefined });
       return { ok: true };
     } catch (error) {
       return { ok: false, error: toApiError(error) };
