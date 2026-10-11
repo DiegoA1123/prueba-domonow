@@ -84,6 +84,19 @@ public sealed class ParkingSpotTests
     }
 
     [Fact]
+    public void CheckOut_WithNonUtcOffset_StoresSameInstantInUtc()
+    {
+        var (spot, assignment) = OccupiedSpot();
+        var colombiaTime = new DateTimeOffset(2026, 10, 10, 12, 0, 0, TimeSpan.FromHours(-5)); // 17:00 UTC
+
+        var result = spot.CheckOut(assignment.Id, colombiaTime, colombiaTime);
+
+        var checkedOutAt = result.Value.CheckedOutAt.ShouldNotBeNull();
+        checkedOutAt.Offset.ShouldBe(TimeSpan.Zero);
+        checkedOutAt.ShouldBe(colombiaTime);
+    }
+
+    [Fact]
     public void CheckOut_AtExactCheckInTime_IsAllowed()
     {
         var (spot, assignment) = OccupiedSpot();

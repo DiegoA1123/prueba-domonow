@@ -126,6 +126,20 @@ public sealed class ParkingFlowTests(ParkingApiFactory factory)
     }
 
     [Fact]
+    public async Task CheckOut_WithColombiaOffsetTime_Returns200()
+    {
+        var client = await factory.CreateOperatorClientAsync();
+        var spot = await client.GetSpotAsync("P09");
+        var created = await (await client.CheckInAsync(spot.Id, "AAA888")).ReadAsync<CheckInResponse>();
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/parking-assignments/{created.AssignmentId}/checkout",
+            new { checkedOutAt = created.CheckedInAt.ToOffset(TimeSpan.FromHours(-5)) });
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task CheckOut_UnknownAssignment_Returns404()
     {
         var client = await factory.CreateOperatorClientAsync();

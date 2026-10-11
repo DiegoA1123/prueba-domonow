@@ -60,7 +60,8 @@ public sealed class ParkingAssignment : Entity
             return ParkingErrors.CheckOutInFuture;
         }
 
-        CheckedOutAt = checkedOutAt;
+        // Se normaliza a UTC: el cliente puede enviar su zona horaria (p. ej. -05:00) y las fechas se guardan en UTC.
+        CheckedOutAt = checkedOutAt.ToUniversalTime();
         Status = AssignmentStatus.Finished;
         return Result.Success();
     }
