@@ -12,6 +12,8 @@ internal sealed class ParkingSpotConfiguration : IEntityTypeConfiguration<Parkin
     {
         builder.ToTable("parking_spots");
         builder.HasKey(spot => spot.Id);
+        // El dominio genera los Id (Guid v7). Sin esto EF asume que un Id ya asignado es una fila existente.
+        builder.Property(spot => spot.Id).ValueGeneratedNever();
 
         builder.Property(spot => spot.Code)
             .HasConversion(code => code.Value, value => SpotCode.Create(value).Value)

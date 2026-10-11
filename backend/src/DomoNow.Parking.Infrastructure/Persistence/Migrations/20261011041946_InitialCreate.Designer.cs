@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DomoNow.Parking.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ParkingDbContext))]
-    [Migration("20261011040640_InitialCreate")]
+    [Migration("20261011041946_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -28,7 +28,6 @@ namespace DomoNow.Parking.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("DomoNow.Parking.Domain.ParkingSpots.ParkingAssignment", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -90,7 +89,6 @@ namespace DomoNow.Parking.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("DomoNow.Parking.Domain.ParkingSpots.ParkingSpot", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 

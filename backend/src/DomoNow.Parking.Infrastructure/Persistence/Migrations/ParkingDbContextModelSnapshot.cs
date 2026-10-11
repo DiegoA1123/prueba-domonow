@@ -25,7 +25,6 @@ namespace DomoNow.Parking.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("DomoNow.Parking.Domain.ParkingSpots.ParkingAssignment", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -87,7 +86,6 @@ namespace DomoNow.Parking.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("DomoNow.Parking.Domain.ParkingSpots.ParkingSpot", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 

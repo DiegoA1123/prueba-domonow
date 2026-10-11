@@ -16,6 +16,9 @@ internal sealed class ParkingAssignmentConfiguration : IEntityTypeConfiguration<
             "ck_parking_assignments_checkout_after_checkin",
             "checked_out_at IS NULL OR checked_out_at >= checked_in_at"));
         builder.HasKey(assignment => assignment.Id);
+        // El dominio genera los Id (Guid v7). Sin esto, una asignación nueva añadida vía la navegación del
+        // agregado se interpreta como existente y EF emite UPDATE en lugar de INSERT (falso conflicto de concurrencia).
+        builder.Property(assignment => assignment.Id).ValueGeneratedNever();
 
         builder.Property(assignment => assignment.LicensePlate)
             .HasConversion(plate => plate.Value, value => LicensePlate.Create(value).Value)
