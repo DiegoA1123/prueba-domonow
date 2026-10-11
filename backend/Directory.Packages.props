@@ -1,0 +1,9 @@
+<Project>
+  <!-- Central Package Management: las versiones de NuGet se definen solo aquí. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Se completa al crear los proyectos (Fase 1). -->
+  </ItemGroup>
+</Project>
