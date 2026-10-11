@@ -21,6 +21,7 @@ El mismo término se usa en conversación, documentación, código backend, cód
 | Fecha/hora de ingreso | `CheckedInAt` | Momento del ingreso (UTC) |
 | Fecha/hora de salida | `CheckedOutAt` | Momento de la salida (UTC), nunca anterior al ingreso |
 | Vehículos dentro | `ActiveAssignments` | Asignaciones en estado `Active` |
+| Operador | `Operator` | Usuario autorizado (portería/administración) que registra ingresos y salidas. Pertenece al subdominio genérico de identidad, no al contexto `Parking` (ADR-0004) |
 
 Términos a **evitar** por ambiguos: "reserva" (no hay reservas futuras), "slot", "celda", "ticket".
 
@@ -41,6 +42,7 @@ Términos a **evitar** por ambiguos: "reserva" (no hay reservas futuras), "slot"
 ```
 
 - `Parking` no conoce entidades de otros contextos. `DestinationUnit` se guarda como valor.
+- **Identidad (subdominio genérico)**: operadores, contraseñas y tokens JWT. Vive fuera del dominio `Parking`, en `Application/Authentication` + `Infrastructure/Identity` (ADR-0004).
 - A futuro: integración por eventos (p. ej. `VehicleCheckedIn` → notificación al residente). Ver README "Evolución de la solución".
 
 ## 3. Agregado `ParkingSpot`
@@ -73,7 +75,7 @@ ParkingSpot  «Aggregate Root»
 | R2 | No hay `CheckIn` si `Status == OutOfService` | `CheckIn` | `Parking.SpotOutOfService` (422) |
 | R3 | `CheckOut` deja `Status = Available` y la asignación `Finished` en la misma operación | `CheckOut` | — |
 | R4 | `LicensePlate` siempre normalizada y válida | `LicensePlate.Create` | `Parking.InvalidLicensePlate` (400) |
-| R5 | `CheckedOutAt >= CheckedInAt` | `ParkingAssignment.Finish` | `Parking.CheckOutBeforeCheckIn` (422) |
+| R5 | `CheckedInAt <= CheckedOutAt <= ahora`. Por defecto la hora la pone el servidor; el cliente puede enviar `checkedOutAt` opcional (registro tardío) y se valida igual | `ParkingAssignment.Finish` | `Parking.CheckOutBeforeCheckIn` / `Parking.CheckOutInFuture` (422) |
 | — | No se puede marcar fuera de servicio un parqueadero ocupado | `MarkOutOfService` | `Parking.SpotOccupied` (409) |
 | — | No se puede dar salida a una asignación no activa | `CheckOut` | `Parking.AssignmentNotActive` (409) |
 
@@ -91,7 +93,7 @@ ParkingAssignment: (create) ─▶ Active ──Finish──▶ Finished
 
 | VO | Regla de creación |
 |----|-------------------|
-| `LicensePlate` | Obligatoria; elimina espacios, guiones y puntos; mayúsculas; `^[A-Z0-9]{5,7}$` (*pendiente de confirmar*) |
+| `LicensePlate` | Obligatoria; elimina espacios, guiones y puntos; mayúsculas. Formato colombiano estricto, según el ejemplo del enunciado: **carro** `^[A-Z]{3}[0-9]{3}$` (`ABC123`) o **moto** `^[A-Z]{3}[0-9]{2}[A-Z]$` (`ABC12D`). Placas extranjeras/diplomáticas quedan fuera (supuesto documentado) |
 | `SpotCode` | Obligatorio; mayúsculas; formato `P` + 2 dígitos |
 | `VisitorName` | Obligatorio; recortado; 2–100 caracteres |
 | `DestinationUnit` | Obligatorio; recortado; 1–20 caracteres |

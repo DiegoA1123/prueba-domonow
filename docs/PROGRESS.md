@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 0 — Definición de forma de trabajo (sin proyectos creados)
-**Último paso**: DDD incorporado (ADR-0003 + `docs/DOMAIN.md`) y documentos alineados.
-**Siguiente paso**: Configurar identidad Git + primer commit → resolver decisiones pendientes → Fase 1 (backend).
+**Último paso**: Decisiones de diseño cerradas con el usuario (auth JWT, placa estricta, hora de salida, BD de tests); ADR-0004; AI-USAGE con 7 registros reales; README con supuestos.
+**Siguiente paso**: Plan de implementación backend (`superpowers:writing-plans`) → Fase 1.
 
 ## Tablero
 
@@ -18,14 +18,19 @@
 | 0 | Carpeta, docs de trabajo, convenciones, ADR-0001/0002 | ✅ |
 | 0 | DDD: ADR-0003, `docs/DOMAIN.md` (lenguaje ubicuo, agregado, invariantes) | ✅ |
 | 0 | `git init -b main` | ✅ |
-| 0 | Identidad Git (`user.name`/`user.email`) + primer commit | ⏳ |
+| 0 | Identidad Git (local: Diego Andres) + primer commit `d6d9997` | ✅ |
+| 0 | Decisiones de diseño cerradas + ADR-0004 (JWT) + AI-USAGE inicial + README supuestos | ✅ |
+| 0 | Revisión del usuario: límite del agregado (ADR-0003) — aprobado | ✅ |
+| 1 | Plan de implementación backend | ⏳ |
 | 1 | Backend: solución + 4 proyectos + 3 de tests | ⬜ |
 | 1 | Dominio: ParkingSpot, ParkingAssignment, LicensePlate (TDD R1–R5) | ⬜ |
 | 1 | Application: casos de uso CheckIn, CheckOut, GetSpots, GetActive | ⬜ |
 | 1 | Infrastructure: DbContext, configuraciones, índice parcial, xmin, migración, seed | ⬜ |
 | 1 | Api: endpoints, ProblemDetails, CORS, OpenAPI | ⬜ |
+| 1 | Autenticación: login JWT, operadores (hash), roles, user-secrets (ADR-0004) | ⬜ |
 | 1 | Test de integración de concurrencia (R6) | ⬜ |
 | 2 | Frontend: proyecto Angular + estructura hexagonal | ⬜ |
+| 2 | Login + interceptor JWT + guard | ⬜ |
 | 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ⬜ |
 | 2 | Tests frontend (store, mappers) | ⬜ |
 | 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ⬜ |
@@ -44,17 +49,18 @@ Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer 
 | 2026-10-10 | Código/commits en inglés, docs en español | CLAUDE.md |
 | 2026-10-10 | DDD: `ParkingSpot` Aggregate Root, `ParkingAssignment` entidad interna (solo activa cargada); repo por agregado; lecturas por proyección; sin domain events por ahora | ADR-0003 |
 
-## Decisiones pendientes (confirmar con el usuario)
+| 2026-10-10 | Auth: JWT + operadores con hash + rol `Operator` (usuario rechazó dejarla fuera de alcance) | ADR-0004 · AI-USAGE #3 |
+| 2026-10-10 | Placa estricta Colombia: carro `AAA999`, moto `AAA99A` (usuario modificó propuesta laxa) | DOMAIN §4 · AI-USAGE #4 |
+| 2026-10-10 | Hora de salida: servidor por defecto + `checkedOutAt` opcional validado (no anterior al ingreso ni futura) | DOMAIN §3 · AI-USAGE #5 |
+| 2026-10-10 | Tests de integración contra PostgreSQL local, BD `domonow_parking_tests` | ARCHITECTURE §2.5 · AI-USAGE #6 |
 
-1. **Autenticación**: el enunciado dice "usuario autorizado". Propuesta: fuera de alcance, documentado como supuesto (o API key simple si sobra tiempo).
-2. **Formato de placa**: propuesta `^[A-Z0-9]{5,7}$` tras normalizar (carros `ABC123`, motos `ABC12D`).
-3. **Hora de salida**: propuesta — la pone el servidor (`TimeProvider`); el endpoint acepta `checkOutAt` opcional solo para validar R5.
-4. **Tests de integración**: contra PostgreSQL local con BD de test dedicada (Testcontainers requiere Docker).
+## Decisiones pendientes
 
-## Supuestos (irán al README)
+Ninguna. (Límite del agregado aprobado por el usuario el 2026-10-10 → AI-USAGE #7.)
 
-- Una sola propiedad, 30 parqueaderos sembrados.
-- "Cancelada" existe como estado pero no se expone endpoint de cancelación salvo que sobre tiempo.
+## Supuestos
+
+Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 
 ## Bitácora
 
@@ -71,3 +77,11 @@ Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer 
 - **Decisión clave**: límite del agregado = `ParkingSpot` porque R1 y R3 son invariantes transaccionales entre parqueadero y asignación. Con eso, la versión del agregado (`xmin`) resuelve R6 y el índice parcial queda como red de seguridad.
 - **Verificación**: N/A (documentación). Revisado que no queden referencias al diseño anterior (`Occupy`, `IParkingAssignmentRepository`).
 - **Siguiente**: identidad Git + primer commit.
+
+### 2026-10-10 — Fase 0: decisiones de diseño cerradas
+- **Qué**: Git configurado localmente (Diego Andres) y primer commit `d6d9997`. Usuario respondió las 4 decisiones pendientes.
+- **Archivos**: nuevo `docs/adr/0004-authentication-jwt.md`; actualizados `docs/DOMAIN.md` (placa estricta, R5 con opcional, término Operador, subdominio identidad), `docs/ARCHITECTURE.md` (Authentication/Identity en capas, core/auth en frontend, 401/403, BDs dev/test), `docs/CONVENTIONS.md` (seguridad), `CLAUDE.md`, `README.md` (stack de seguridad + supuestos), `AI-USAGE.md` (registro continuo #1–#7).
+- **Decisiones**: ver tabla. Dos propuestas de la IA cambiaron por criterio del usuario (auth rechazada, placa modificada).
+- **Verificación**: N/A (documentación).
+- **Siguiente**: revisión del agregado por el usuario → plan de implementación backend.
+- **Actualización**: el usuario aprobó el límite del agregado (`ParkingSpot` raíz, asignación interna) tras comparar con la alternativa de dos agregados. AI-USAGE #7 → Aceptada.

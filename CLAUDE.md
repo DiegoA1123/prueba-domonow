@@ -36,6 +36,8 @@ Enunciado completo resumido en `docs/REQUIREMENTS.md`.
 
 Ver `docs/adr/0002-concurrency-strategy.md`.
 
+Decisiones cerradas con el usuario (2026-10-10): **JWT + operador de prueba** (ADR-0004) · placa estricta `AAA999`/`AAA99A` · hora de salida del servidor + `checkedOutAt` opcional · tests de integración contra PostgreSQL local (`domonow_parking_tests`).
+
 ## 4. Flujo de trabajo
 
 - Planear antes de codificar (skill `superpowers:writing-plans`), TDD para reglas de dominio (`superpowers:test-driven-development`), verificar antes de cerrar (`superpowers:verification-before-completion`).

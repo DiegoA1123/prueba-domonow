@@ -58,7 +58,9 @@ Las reglas automatizables están en `.editorconfig`, `backend/Directory.Build.pr
 
 ### Seguridad
 - Validar toda entrada en el borde (longitudes máximas, formato de placa).
-- Sin secretos en el repo: `dotnet user-secrets` / variables de entorno.
+- Sin secretos en el repo: `dotnet user-secrets` / variables de entorno (clave JWT, credenciales del operador de prueba, cadena de conexión).
+- Contraseñas siempre hasheadas (`PasswordHasher<T>`); jamás se registran en logs ni se devuelven en respuestas.
+- Endpoints con `RequireAuthorization()` por defecto; los anónimos (`/api/auth/login`, health) se marcan explícitamente con `AllowAnonymous()`.
 - CORS restringido al origen del frontend. ProblemDetails sin stack traces fuera de Development.
 - Solo consultas parametrizadas (EF Core); prohibido SQL concatenado.
 

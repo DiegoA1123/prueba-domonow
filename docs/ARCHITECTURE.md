@@ -46,10 +46,13 @@ backend/
 │   │       ├── CheckIn/                   #   CheckInCommand, CheckInHandler, CheckInValidator
 │   │       ├── CheckOut/
 │   │       └── GetActive/
-│   │   └── ParkingSpots/GetAll/
+│   │   ├── ParkingSpots/GetAll/
+│   │   └── Authentication/Login/          # Subdominio genérico (ADR-0004): LoginHandler +
+│   │                                      #   puertos IOperatorCredentialStore, IAccessTokenIssuer
 │   ├── DomoNow.Parking.Infrastructure/    # Adaptador driven. Depende de Application.
 │   │   ├── Persistence/                   # ParkingDbContext, Configurations/, Migrations/, Seed
-│   │   └── Repositories/                  # Implementaciones de los puertos
+│   │   ├── Repositories/                  # Implementaciones de los puertos
+│   │   └── Identity/                      # Operator (tabla), PasswordHasher, JwtAccessTokenIssuer
 │   └── DomoNow.Parking.Api/               # Adaptador driving + composition root.
 │       ├── Endpoints/                     # Minimal APIs agrupadas por recurso
 │       ├── ErrorHandling/                 # Result → ProblemDetails, IExceptionHandler global
@@ -57,7 +60,8 @@ backend/
 └── tests/
     ├── DomoNow.Parking.Domain.UnitTests/       # Reglas R1–R5 (rápidas, sin BD)
     ├── DomoNow.Parking.Application.UnitTests/  # Handlers con puertos falsos
-    └── DomoNow.Parking.Api.IntegrationTests/   # WebApplicationFactory + PostgreSQL real (R6)
+    └── DomoNow.Parking.Api.IntegrationTests/   # WebApplicationFactory + PostgreSQL local real (R6, auth)
+                                                #   BD dedicada `domonow_parking_tests`, recreada por migraciones
 ```
 
 ### 2.1 Responsabilidades por capa
@@ -99,6 +103,8 @@ POST /api/parking-assignments
 | Tipo de error | HTTP | Ejemplo |
 |---------------|------|---------|
 | Validation | 400 | Placa vacía, formato inválido |
+| Unauthorized | 401 | Sin token, token expirado, credenciales inválidas en login |
+| Forbidden | 403 | Usuario autenticado sin rol `Operator` intentando escribir |
 | NotFound | 404 | Parqueadero o asignación inexistente |
 | Conflict | 409 | Parqueadero ocupado / carrera concurrente perdida / asignación ya finalizada |
 | BusinessRule | 422 | Parqueadero fuera de servicio, salida anterior a ingreso |
@@ -113,12 +119,19 @@ Doble barrera (ADR-0002 + ADR-0003):
 
 La validación previa sola **no** basta (check-then-act race).
 
+### 2.4.1 Seguridad (ADR-0004)
+
+- JWT Bearer emitido por `POST /api/auth/login`; expira en 60 min; rol `Operator` requerido para escribir.
+- Contraseñas con `PasswordHasher<T>` (PBKDF2 + salt). Clave de firma y usuario de prueba en `dotnet user-secrets`.
+- CORS solo para el origen del frontend; validación de entrada en el borde; ProblemDetails sin detalles internos.
+
 ### 2.5 Persistencia
 
 - PostgreSQL 17 + Npgsql EF Core provider. Nombres `snake_case`.
 - Fechas en `DateTimeOffset` UTC (`timestamptz`).
 - Enums guardados como texto (legibles, robustos a reordenamientos).
-- Seed: 30 parqueaderos `P01`…`P30` (algunos `OutOfService`).
+- Seed: 30 parqueaderos `P01`…`P30` (algunos `OutOfService`) + operador de prueba (solo Development, credenciales desde user-secrets).
+- BDs: `domonow_parking` (desarrollo) y `domonow_parking_tests` (integración). Sin SQLite/InMemory: no soportan `xmin` ni reproducen la concurrencia real.
 - Consultas de lectura con `AsNoTracking()` y proyección directa a DTO.
 
 ## 3. Frontend (`/frontend`)
@@ -128,6 +141,8 @@ Mismo principio hexagonal, adaptado a Angular (standalone components, signals, c
 ```
 frontend/src/app/
 ├── core/                        # Transversal, se carga una vez
+│   ├── auth/                    # Sesión (token en memoria + sessionStorage), auth interceptor,
+│   │                            #   authGuard, página de login (ADR-0004)
 │   ├── config/                  # API base URL (environment)
 │   ├── http/                    # Interceptor de errores → ProblemDetails tipado
 │   └── notifications/           # Servicio de toasts/mensajes
