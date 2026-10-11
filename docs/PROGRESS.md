@@ -62,6 +62,13 @@ Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer 
 
 Ninguna. (Límite del agregado aprobado por el usuario el 2026-10-10 → AI-USAGE #7.)
 
+## Ideas para README § "Evolución de la solución" (se redactan al final)
+
+- **Concurrencia**: mantener optimista (`xmin`) + índices parciales; la contención por parqueadero no crece con el número de propiedades, solo el volumen. `SELECT … FOR UPDATE` evaluado y descartado para asignación manual; usar `FOR UPDATE SKIP LOCKED` si se agrega "asignar automáticamente el primer libre" (muchas solicitudes compiten por las mismas filas). (AI-USAGE #10)
+- **Multi-tenancy**: particionar por propiedad → la contención queda local a cada propiedad.
+- **Mensajería**: domain events + outbox (ver ADR-0003, no implementados hoy).
+- **Seguridad**: OIDC externo / refresh tokens (ver ADR-0004).
+
 ## Supuestos
 
 Movidos y mantenidos en `README.md` § Supuestos (fuente única).
