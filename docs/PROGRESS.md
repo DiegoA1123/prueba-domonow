@@ -6,7 +6,7 @@
 ## Estado actual
 
 **Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
-**Último paso**: Plan del frontend escrito (`docs/plans/2026-10-11-frontend-implementation.md`, 10 tasks); `feat/frontend` rebasada sobre `main`. Backend: 82/82 tests.
+**Último paso**: Frontend implementado (Tasks 1–9) y documentado; 52/52 tests frontend, 82/82 backend; verificación real en navegador con 5 capturas. Todo en `feat/frontend` (local, sin push).
 **Siguiente paso**: Task 10 del frontend: revisión final independiente de `feat/frontend` → push + PR → README "Evolución de la solución" + AI-USAGE final.
 
 ## Tablero
