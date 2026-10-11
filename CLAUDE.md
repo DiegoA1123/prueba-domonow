@@ -66,4 +66,6 @@ cd frontend && npm test
 
 - Node vía **nvm-windows** (24.21.0). PostgreSQL 17 nativo como servicio `postgresql-x64-17`, puerto 5432.
 - Las credenciales locales NUNCA se commitean: usar `dotnet user-secrets` o variables de entorno.
+- ⚠️ **Los comandos de Claude corren en un sandbox que virtualiza `AppData`**: lo que escriba ahí (user-secrets, instalaciones globales) puede no existir para el usuario. Configurar secretos con `scripts/setup-dev-secrets.ps1` ejecutado en la **terminal del usuario** (`run_in_terminal`), nunca desde Bash/PowerShell de Claude. Verificar desde la terminal del usuario, no desde el sandbox (AI-USAGE #15).
+- PowerShell del usuario tiene ExecutionPolicy por defecto (Restricted): usar `npm.cmd` / `ng.cmd` en su terminal.
 - Docker no está instalado (requiere WSL); el `docker-compose` es opcional para la entrega.

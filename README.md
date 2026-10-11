@@ -20,7 +20,13 @@ Solución Full Stack para la prueba técnica de OFIMA SAS: registrar el ingreso 
 ## Configurar la base de datos
 
 1. Tener PostgreSQL 17 corriendo en `localhost:5432`.
-2. Configurar los secretos de desarrollo con `dotnet user-secrets` (no se versionan):
+2. Configurar los secretos de desarrollo con `dotnet user-secrets` (no se versionan). La forma más simple es el script, que pide las contraseñas, genera una clave JWT aleatoria y configura también la base de las pruebas:
+
+   ```bash
+   powershell -ExecutionPolicy Bypass -File scripts/setup-dev-secrets.ps1
+   ```
+
+   O manualmente:
 
    ```bash
    cd backend
@@ -32,6 +38,8 @@ Solución Full Stack para la prueba técnica de OFIMA SAS: registrar el ingreso 
 
    Una clave aleatoria se puede generar con `openssl rand -base64 48`.
 3. Al arrancar en Development la API aplica las migraciones y siembra 30 parqueaderos (`P04` y `P17` fuera de servicio) y el operador de prueba. No hace falta crear la base de datos a mano.
+
+> Los user-secrets solo se cargan con `ASPNETCORE_ENVIRONMENT=Development`. Ejecute con el perfil `http` o `https` (`dotnet run --launch-profile http`, o el selector de perfil de Visual Studio); ejecutar el `.exe` directamente arranca en Production y la API indicará que falta `ConnectionStrings:Parking`.
 
 ## Ejecutar el backend
 
