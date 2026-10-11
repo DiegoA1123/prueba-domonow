@@ -95,4 +95,22 @@ describe('CheckInDialog', () => {
       'ya se encuentra dentro',
     );
   });
+
+  it('shows the backend message outside the scrollable form so it is always visible', async () => {
+    checkIn.mockResolvedValue({
+      ok: false,
+      error: {
+        status: 409,
+        code: 'Parking.SpotOccupied',
+        message: 'El parqueadero P01 ya está ocupado.',
+      },
+    });
+    await fill('abc-123', 'Carlos Pérez', '302');
+
+    await submitForm();
+
+    const alert = element.querySelector('[role="alert"]');
+    expect(alert).not.toBeNull();
+    expect(alert?.closest('mat-dialog-content')).toBeNull();
+  });
 });

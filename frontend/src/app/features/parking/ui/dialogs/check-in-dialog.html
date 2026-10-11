@@ -1,6 +1,11 @@
 <form (submit)="save($event)" novalidate>
   <h2 mat-dialog-title>Registrar ingreso · {{ spot.code }}</h2>
 
+  <!-- Fuera de la zona con scroll: siempre visible, aunque el formulario esté desplazado. -->
+  @if (serverError(); as message) {
+    <p class="check-in__error" role="alert">{{ message }}</p>
+  }
+
   <mat-dialog-content class="check-in">
     <mat-form-field appearance="outline">
       <mat-label>Placa</mat-label>
@@ -28,10 +33,6 @@
         <mat-error>{{ error.message }}</mat-error>
       }
     </mat-form-field>
-
-    @if (serverError(); as message) {
-      <p class="check-in__error" role="alert">{{ message }}</p>
-    }
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
