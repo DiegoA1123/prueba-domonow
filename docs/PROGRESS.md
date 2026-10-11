@@ -7,7 +7,7 @@
 
 **Fase**: 1 — Backend implementado (rama `feat/backend`), pendiente revisión final y merge
 **Último paso**: Plan de backend ejecutado (10 tasks, TDD). Revisión final independiente hecha: 4 hallazgos importantes corregidos con TDD. **82/82 tests** (43 dominio, 14 aplicación, 25 integración contra PostgreSQL).
-**Siguiente paso**: Aprobación del usuario para merge `feat/backend` → `main` → Fase 2 (frontend).
+**Siguiente paso**: Revisión y merge del PR #1 (https://github.com/DiegoA1123/prueba-domonow/pull/1) → Fase 2 (frontend).
 
 ## Tablero
 
@@ -128,3 +128,9 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Diferidos (menores)**: lectura en 2 consultas, validación de `?status=` y `parkingSpotId`, HTTPS/HSTS, test de doble salida vía API → README § Mejoras.
 - **Verificación**: `dotnet build` 0 advertencias; `dotnet test` **82/82** (43 + 14 + 25).
 - **Siguiente**: merge a `main` con aprobación del usuario.
+
+### 2026-10-11 — Repositorio remoto y Pull Request del backend
+- **Qué**: GitHub CLI 2.102.0 instalado; sesión del usuario (`DiegoA1123`) iniciada por él con `gh auth login --web`. Repositorio **privado** creado: https://github.com/DiegoA1123/prueba-domonow. Subidas `main` y `feat/backend`.
+- **PR**: https://github.com/DiegoA1123/prueba-domonow/pull/1 (`feat/backend` → `main`), estado MERGEABLE. Sin CI configurado (no hay checks).
+- **Verificación**: escaneo previo al push — ninguna contraseña local presente en archivos versionados ni en el historial.
+- **Siguiente**: el usuario revisa y aprueba el merge del PR → Fase 2 (frontend).
