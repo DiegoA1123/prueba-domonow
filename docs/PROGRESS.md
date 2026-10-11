@@ -5,9 +5,9 @@
 
 ## Estado actual
 
-**Fase**: 1 — Backend implementado (rama `feat/backend`), pendiente revisión final y merge
-**Último paso**: Plan de backend ejecutado (10 tasks, TDD). Revisión final independiente hecha: 4 hallazgos importantes corregidos con TDD. **82/82 tests** (43 dominio, 14 aplicación, 25 integración contra PostgreSQL).
-**Siguiente paso**: Revisión y merge del PR #1 (https://github.com/DiegoA1123/prueba-domonow/pull/1) → Fase 2 (frontend).
+**Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
+**Último paso**: Plan del frontend escrito (`docs/plans/2026-10-11-frontend-implementation.md`, 10 tasks); `feat/frontend` rebasada sobre `main`. Backend: 82/82 tests.
+**Siguiente paso**: Usuario revisa el plan del frontend y elige modo de ejecución → Task 1 (scaffold Angular 22).
 
 ## Tablero
 
