@@ -23,6 +23,8 @@ Enunciado completo resumido en `docs/REQUIREMENTS.md`.
 - La lógica de negocio vive en el **dominio** (entidades / value objects), no en controladores, repositorios ni componentes Angular.
 - **Pragmatismo**: la prueba penaliza la sobreingeniería. Prohibido sin justificación escrita en un ADR: MediatR, AutoMapper, repositorio genérico, microservicios, CQRS con bases separadas, event sourcing.
 
+- **Frontend reactivo en todo** (regla del usuario): estado en `signal`, derivados en `computed`, `input()/output()`, zoneless + OnPush, HTTP/polling como RxJS → signals, formularios reactivos. Detalle en `docs/CONVENTIONS.md` §3.
+
 ## 3. Reglas de negocio que el código DEBE garantizar
 
 | # | Regla | Dónde se garantiza |

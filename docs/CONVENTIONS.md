@@ -66,11 +66,20 @@ Las reglas automatizables están en `.editorconfig`, `backend/Directory.Build.pr
 
 ## 3. TypeScript / Angular
 
+### Reactividad en todo el frontend (regla del usuario, obligatoria)
+
+- **Estado = `signal()`**; todo valor derivado = **`computed()`** (contadores, filtros, "puede registrar ingreso", textos de estado). Nunca se recalcula a mano ni se duplica estado derivado.
+- Componentes con **`input()` / `output()` / `model()`**; plantillas que solo leen signals. App **zoneless** (`provideZonelessChangeDetection`) + `ChangeDetectionStrategy.OnPush`.
+- HTTP y temporizadores como **flujos RxJS** (`switchMap`, `timer`, `catchError`) que terminan en signals (`toSignal`, `rxResource`/`httpResource`, o `set` desde el store). Nada de `subscribe()` sin `takeUntilDestroyed()`.
+- Formularios **reactivos** (Signal Forms si están estables en la versión instalada; si no, Reactive Forms tipados) — nunca template-driven con `ngModel`.
+- `effect()` solo para efectos de borde (sincronizar con `sessionStorage`, iniciar/pausar el polling); jamás para propagar estado entre signals (para eso existe `computed`).
+- Sin manipulación imperativa del DOM ni `ChangeDetectorRef.detectChanges()`.
+
 - `strict: true` + `strictTemplates`. Prohibido `any` (usar `unknown` y estrechar).
 - Componentes **standalone**, `ChangeDetectionStrategy.OnPush`, `input()` / `output()` / `signal()` / `computed()`.
 - Control flow nativo (`@if`, `@for` con `track`), nada de `*ngIf`/`*ngFor`.
 - `inject()` en lugar de inyección por constructor.
-- Archivos en kebab-case con sufijo de rol: `spot-card.component.ts`, `parking.store.ts`, `parking-http.repository.ts`.
+- Archivos en kebab-case según la guía de estilo de Angular 20+ (la que genera Angular CLI 22): componentes **sin** sufijo `.component` (`spot-card.ts` → clase `SpotCard`), páginas con sufijo `-page` (`parking-board-page.ts` → `ParkingBoardPage`), y sufijo de rol en el resto: `parking.store.ts`, `parking.repository.ts`, `parking-http.repository.ts`, `auth.interceptor.ts`, `auth.guard.ts`.
 - Componentes presentacionales sin servicios de datos; solo la página (contenedor) usa el store.
 - Las respuestas HTTP se tipan con DTOs y se **mapean** a modelos de dominio en la capa `infrastructure`.
 - Observables: sufijo `$`; desuscripción con `takeUntilDestroyed()` o `toSignal()`.

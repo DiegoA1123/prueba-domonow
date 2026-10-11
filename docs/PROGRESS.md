@@ -59,6 +59,9 @@ Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer 
 | 2026-10-10 | Consultas sin handler: los endpoints usan el puerto `IParkingReadModel` directamente; `IUnitOfWork.CommitAsync` devuelve `Result` | ARCHITECTURE §2.2 |
 | 2026-10-10 | Mensajes de error en español, códigos en inglés; `ReturnToService` eliminado (YAGNI) | CONVENTIONS · DOMAIN |
 
+| 2026-10-11 | Frontend: Angular Material; refresco tras cada acción + polling cada 30 s (pausado con la pestaña oculta); filtro por estado, lista de vehículos dentro y detalle en tarjeta ocupada; salida con hora del servidor (sin UI de hora tardía) | Usuario |
+| 2026-10-11 | Regla del usuario: **reactividad en todo el frontend** (signals/computed, input/output, zoneless + OnPush, RxJS → signals, formularios reactivos) | CONVENTIONS §3 |
+
 ## Decisiones pendientes
 
 Ninguna. (Límite del agregado aprobado por el usuario el 2026-10-10 → AI-USAGE #7.)
