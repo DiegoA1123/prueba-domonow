@@ -1,0 +1,37 @@
+.login {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 64px);
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.login__card {
+  width: min(100%, 24rem);
+}
+
+.login__content {
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 1rem;
+}
+
+.login__actions {
+  justify-content: flex-end;
+}
+
+.login__notice,
+.login__error {
+  margin: 0 0 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+.login__notice {
+  background: var(--mat-sys-secondary-container);
+}
+
+.login__error {
+  background: var(--status-occupied-bg);
+  color: var(--status-occupied);
+}
