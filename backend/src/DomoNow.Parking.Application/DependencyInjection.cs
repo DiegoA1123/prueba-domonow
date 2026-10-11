@@ -1,3 +1,4 @@
+using DomoNow.Parking.Application.Authentication;
 using DomoNow.Parking.Application.ParkingAssignments.CheckIn;
 using DomoNow.Parking.Application.ParkingAssignments.CheckOut;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<CheckInHandler>();
         services.AddScoped<CheckOutHandler>();
+        services.AddScoped<LoginHandler>();
         return services;
     }
 }
