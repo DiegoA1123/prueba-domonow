@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
-**Último paso**: Frontend implementado (Tasks 1–9) y documentado; 52/52 tests frontend, 82/82 backend; verificación real en navegador con 5 capturas. Todo en `feat/frontend` (local, sin push).
-**Siguiente paso**: Task 10 del frontend: revisión final independiente de `feat/frontend` → push + PR → README "Evolución de la solución" + AI-USAGE final.
+**Último paso**: Frontend implementado, verificado en navegador y revisado por agente independiente; 5 hallazgos corregidos con TDD. 58/58 tests frontend, 82/82 backend. Todo en `feat/frontend` (local, sin push).
+**Siguiente paso**: Paso 2 — push de `feat/frontend` y PR #3 → README "Evolución de la solución" → AI-USAGE final.
 
 ## Tablero
 
@@ -153,3 +153,10 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Verificación**: `npm test` → **52/52**, lint limpio, build OK. Backend sin cambios (82/82).
 - **Docs**: README (ejecutar frontend, tests, capturas), ARCHITECTURE §3, CLAUDE.md §5, AI-USAGE #16–#17.
 - **Pendiente** (Task 10): revisión final independiente de la rama, push de `feat/frontend` y PR; luego README § "Evolución de la solución", "Qué mejoraría" y sección AI Code Review / casos seleccionados de AI-USAGE.
+
+### 2026-10-11 — Fase 2: revisión final independiente del frontend
+- **Qué**: Agente revisor (Opus, contexto nuevo) revisó `feat/frontend` contra plan, spec y Review Focus: 0 críticos, 3 importantes, 7 menores. Arquitectura, reactividad (CONVENTIONS §3) y manejo de errores validados.
+- **Corregidos con TDD** (`8a629d7`, `3ea2970`): diálogos que quedaban encima del login tras un 401 (`closeAll` al destruir la página); timeout de 10 s si la API se cuelga; una sola acción por parqueadero aunque el botón no se haya deshabilitado; sin "No hay vehículos dentro" cuando la primera carga falla; tests de refresco tras error y de `checkOut`.
+- **Diferidos (menores)**: README § Mejoras (frontend). AI-USAGE #18.
+- **Verificación**: `npm test` **58/58**, lint limpio, build OK.
+- **Siguiente**: paso 2 — push de `feat/frontend` y PR #3.
