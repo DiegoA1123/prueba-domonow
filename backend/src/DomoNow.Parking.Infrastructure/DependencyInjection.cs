@@ -18,7 +18,9 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("Parking")
             ?? throw new InvalidOperationException(
-                "Falta la cadena de conexión 'ConnectionStrings:Parking' (configúrela con dotnet user-secrets).");
+                "Falta la cadena de conexión 'ConnectionStrings:Parking'. En desarrollo se lee de dotnet user-secrets, " +
+                "que solo se cargan con ASPNETCORE_ENVIRONMENT=Development (perfil 'http' o 'https'); " +
+                "fuera de desarrollo, configúrela con la variable de entorno ConnectionStrings__Parking.");
 
         services.AddDbContext<ParkingDbContext>(options => options
             .UseNpgsql(connectionString)

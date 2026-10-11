@@ -134,3 +134,12 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **PR**: https://github.com/DiegoA1123/prueba-domonow/pull/1 (`feat/backend` → `main`), estado MERGEABLE. Sin CI configurado (no hay checks).
 - **Verificación**: escaneo previo al push — ninguna contraseña local presente en archivos versionados ni en el historial.
 - **Siguiente**: el usuario revisa y aprueba el merge del PR → Fase 2 (frontend).
+
+### 2026-10-11 — Corrección: user-secrets invisibles para Visual Studio (rama `fix/api-dev-user-secrets`)
+- **Síntoma**: con F5 (perfil `http`) la API lanzaba "Falta la cadena de conexión 'ConnectionStrings:Parking'"; desde la terminal de Claude funcionaba.
+- **Causa raíz**: los secretos se habían configurado desde el sandbox de Claude, que virtualiza `AppData`; el `secrets.json` no existía en el disco real. Diagnóstico temporal en `Program.cs` → `SecretsPath=…secrets.json Exists=False` bajo Visual Studio.
+- **Primera hipótesis descartada**: registrar los secretos con `AddUserSecrets<Program>()` (no resolvió; revertido).
+- **Corrección**: `scripts/setup-dev-secrets.ps1` (pide o lee contraseñas del archivo local ignorado, genera clave JWT, configura API y tests) ejecutado en la terminal real del usuario; mensaje de error de `AddInfrastructure` más explicativo; README § Configurar la base de datos y CLAUDE.md § Entorno actualizados.
+- **Verificación**: el usuario confirmó que la API arranca en Visual Studio. `dotnet build` 0 advertencias; `dotnet test` 82/82.
+- **Nota de entorno**: ExecutionPolicy de PowerShell del usuario en Restricted → usar `npm.cmd`/`ng.cmd` o que el usuario configure `RemoteSigned` para su cuenta.
+- **Siguiente**: merge del PR de esta corrección → retomar `feat/frontend` (rebase sobre `main`) y ejecutar el plan del frontend.
