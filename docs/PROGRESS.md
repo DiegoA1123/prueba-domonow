@@ -7,7 +7,7 @@
 
 **Fase**: 0 — Definición de forma de trabajo (sin proyectos creados)
 **Último paso**: Decisiones de diseño cerradas con el usuario (auth JWT, placa estricta, hora de salida, BD de tests); ADR-0004; AI-USAGE con 7 registros reales; README con supuestos.
-**Siguiente paso**: Plan de implementación backend (`superpowers:writing-plans`) → Fase 1.
+**Siguiente paso**: Usuario revisa el plan `docs/plans/2026-10-10-backend-implementation.md` y R7 (ADR-0005, AI-USAGE #8) y elige modo de ejecución → Fase 1 Task 1.
 
 ## Tablero
 
@@ -21,7 +21,8 @@
 | 0 | Identidad Git (local: Diego Andres) + primer commit `d6d9997` | ✅ |
 | 0 | Decisiones de diseño cerradas + ADR-0004 (JWT) + AI-USAGE inicial + README supuestos | ✅ |
 | 0 | Revisión del usuario: límite del agregado (ADR-0003) — aprobado | ✅ |
-| 1 | Plan de implementación backend | ⏳ |
+| 1 | Plan de implementación backend (10 tasks) — `docs/plans/2026-10-10-backend-implementation.md` | ✅ (pendiente revisión) |
+| 1 | R7: placa única activa (ADR-0005) | ✅ diseño |
 | 1 | Backend: solución + 4 proyectos + 3 de tests | ⬜ |
 | 1 | Dominio: ParkingSpot, ParkingAssignment, LicensePlate (TDD R1–R5) | ⬜ |
 | 1 | Application: casos de uso CheckIn, CheckOut, GetSpots, GetActive | ⬜ |
@@ -53,6 +54,9 @@ Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer 
 | 2026-10-10 | Placa estricta Colombia: carro `AAA999`, moto `AAA99A` (usuario modificó propuesta laxa) | DOMAIN §4 · AI-USAGE #4 |
 | 2026-10-10 | Hora de salida: servidor por defecto + `checkedOutAt` opcional validado (no anterior al ingreso ni futura) | DOMAIN §3 · AI-USAGE #5 |
 | 2026-10-10 | Tests de integración contra PostgreSQL local, BD `domonow_parking_tests` | ARCHITECTURE §2.5 · AI-USAGE #6 |
+| 2026-10-10 | R7 (regla del usuario): placa única activa; cruza agregados → handler + índice único parcial por placa → 409 | ADR-0005 · AI-USAGE #8 |
+| 2026-10-10 | Consultas sin handler: los endpoints usan el puerto `IParkingReadModel` directamente; `IUnitOfWork.CommitAsync` devuelve `Result` | ARCHITECTURE §2.2 |
+| 2026-10-10 | Mensajes de error en español, códigos en inglés; `ReturnToService` eliminado (YAGNI) | CONVENTIONS · DOMAIN |
 
 ## Decisiones pendientes
 
@@ -85,3 +89,10 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Verificación**: N/A (documentación).
 - **Siguiente**: revisión del agregado por el usuario → plan de implementación backend.
 - **Actualización**: el usuario aprobó el límite del agregado (`ParkingSpot` raíz, asignación interna) tras comparar con la alternativa de dos agregados. AI-USAGE #7 → Aceptada.
+
+### 2026-10-10 — Fase 1: regla R7 y plan del backend
+- **Qué**: Commit `b7ebcb2` de las decisiones. Usuario agregó R7 (una placa no ingresa dos veces sin salir). Nuevo ADR-0005; actualizados DOMAIN, CLAUDE, REQUIREMENTS, ARCHITECTURE (consultas sin handler, flujo CheckIn con R7, índice por placa), CONVENTIONS (mensajes en español).
+- **Plan**: `docs/plans/2026-10-10-backend-implementation.md` — 10 tasks TDD con código completo: scaffold → kernel+VOs → agregado → casos de uso → login → persistencia → identidad/seed → API → tests de integración (incluye concurrencia R6/R7) → docs+merge.
+- **Autorrevisión del plan**: corregidos datos de test compartidos (AAA444 provocaría 409 en vez de 422), test dependiente del orden, `using` faltante del rate limiter, captura de excepciones del UnitOfWork (filtros `when` por restricción), `!` → `ShouldNotBeNull()`. Registrado en AI-USAGE #9.
+- **Verificación**: N/A (documentación).
+- **Siguiente**: revisión del plan por el usuario + modo de ejecución.

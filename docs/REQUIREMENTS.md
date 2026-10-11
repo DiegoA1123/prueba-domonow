@@ -17,6 +17,10 @@ Tiempo máximo: **6 h** (≈3 h backend, ≈3 h frontend + pruebas + revisión).
 5. Fecha de salida no puede ser anterior a la de ingreso.
 6. Concurrencia: dos usuarios asignan P15 casi a la vez → solo una asignación activa.
 
+### Reglas adicionales definidas por el ingeniero
+
+7. Un vehículo (placa) no puede ingresar dos veces sin haber salido: máximo una asignación activa por placa en toda la propiedad (ADR-0005).
+
 ## Backend (.NET, C#, EF Core, SQL Server/PostgreSQL)
 
 - `GET` parqueaderos (código, estado, disponibilidad; filtro opcional por estado).

@@ -61,10 +61,9 @@ ParkingSpot  «Aggregate Root»
 │     ├── CheckedOutAt : DateTimeOffset?
 │     └── Status : AssignmentStatus
 │
-├── CheckIn(plate, visitor, unit, now) → Result<ParkingAssignment>
-├── CheckOut(assignmentId, at)        → Result
-├── MarkOutOfService()                → Result
-└── ReturnToService()                 → Result
+├── CheckIn(plate, visitor, unit, now)          → Result<ParkingAssignment>
+├── CheckOut(assignmentId, checkedOutAt, now)   → Result<ParkingAssignment>
+└── MarkOutOfService()                          → Result   (usado por el seed)
 ```
 
 ### Invariantes del agregado
@@ -76,6 +75,7 @@ ParkingSpot  «Aggregate Root»
 | R3 | `CheckOut` deja `Status = Available` y la asignación `Finished` en la misma operación | `CheckOut` | — |
 | R4 | `LicensePlate` siempre normalizada y válida | `LicensePlate.Create` | `Parking.InvalidLicensePlate` (400) |
 | R5 | `CheckedInAt <= CheckedOutAt <= ahora`. Por defecto la hora la pone el servidor; el cliente puede enviar `checkedOutAt` opcional (registro tardío) y se valida igual | `ParkingAssignment.Finish` | `Parking.CheckOutBeforeCheckIn` / `Parking.CheckOutInFuture` (422) |
+| R7 | Una placa no puede tener dos asignaciones activas (no entra dos veces sin salir). **Cruza agregados**: no la protege `ParkingSpot`, sino el `CheckInHandler` + índice único parcial (ADR-0005) | `CheckInHandler` + `ux_parking_assignments_active_plate` | `Parking.VehicleAlreadyInside` (409) |
 | — | No se puede marcar fuera de servicio un parqueadero ocupado | `MarkOutOfService` | `Parking.SpotOccupied` (409) |
 | — | No se puede dar salida a una asignación no activa | `CheckOut` | `Parking.AssignmentNotActive` (409) |
 
@@ -83,7 +83,8 @@ ParkingSpot  «Aggregate Root»
 
 ```
 ParkingSpot:      Available ──CheckIn──▶ Occupied ──CheckOut──▶ Available
-                  Available ──MarkOutOfService──▶ OutOfService ──ReturnToService──▶ Available
+                  Available ──MarkOutOfService──▶ OutOfService
+                  (volver a servicio: fuera de alcance; no hay requisito ni endpoint)
 
 ParkingAssignment: (create) ─▶ Active ──Finish──▶ Finished
                                       └─Cancel──▶ Cancelled   (sin endpoint por ahora)

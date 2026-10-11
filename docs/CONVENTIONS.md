@@ -37,7 +37,7 @@ Las reglas automatizables están en `.editorconfig`, `backend/Directory.Build.pr
 - **Un agregado por transacción**; un repositorio por agregado; el repositorio devuelve agregados completos y consistentes.
 - **Nada de modelo anémico**: si una regla habla de estados o invariantes, es un método del agregado, no un `if` en el handler.
 - Los handlers (application services) **orquestan**: obtienen el agregado, invocan un método de dominio, persisten. Si un handler tiene lógica condicional de negocio, está en la capa equivocada.
-- Errores de dominio en un catálogo (`ParkingErrors`) con códigos estables `Parking.<Motivo>`.
+- Errores de dominio en un catálogo (`ParkingErrors`) con códigos estables `Parking.<Motivo>` (inglés, para máquinas) y **mensajes en español** (se muestran tal cual al operador en el frontend).
 - Entidades con **setters privados**; el estado cambia solo mediante métodos con nombre de negocio (`CheckIn`, `CheckOut`, `MarkOutOfService`).
 - Constructores privados + *factory methods* (`ParkingAssignment.Create(...)`) que devuelven `Result<T>` cuando la creación puede fallar.
 - Value objects validan en su creación: un `LicensePlate` existente siempre es válido.

@@ -33,6 +33,7 @@ Enunciado completo resumido en `docs/REQUIREMENTS.md`.
 | R4 | Placa obligatoria y normalizada (`abc-123` → `ABC123`) | Value object `LicensePlate` |
 | R5 | Salida no anterior al ingreso | Entidad `ParkingAssignment.Finish` (invocada por la raíz) |
 | R6 | Concurrencia: solo una solicitud gana | Versión del agregado (`xmin`) + índice único parcial → HTTP 409 |
+| R7 | Una placa no ingresa dos veces sin haber salido (regla del cliente) | `CheckInHandler` + índice único parcial por placa → HTTP 409 (cruza agregados, ADR-0005) |
 
 Ver `docs/adr/0002-concurrency-strategy.md`.
 

@@ -40,14 +40,13 @@ backend/
 │   │   │                                  #   enums de estado, ParkingErrors
 │   │   └── Common/                        # Entity/AggregateRoot base, Error, Result
 │   ├── DomoNow.Parking.Application/       # Application services (casos de uso) + puertos. Depende de Domain.
-│   │   ├── Abstractions/                  # Puertos de salida: IParkingSpotRepository (1 por agregado),
-│   │   │                                  #   IUnitOfWork, IParkingReadModel (consultas)
-│   │   └── ParkingAssignments/            # Un folder por caso de uso (slice):
-│   │       ├── CheckIn/                   #   CheckInCommand, CheckInHandler, CheckInValidator
-│   │       ├── CheckOut/
-│   │       └── GetActive/
-│   │   ├── ParkingSpots/GetAll/
-│   │   └── Authentication/Login/          # Subdominio genérico (ADR-0004): LoginHandler +
+│   │   ├── Abstractions/                  # Puertos de salida: IParkingSpotRepository (1 por agregado), IUnitOfWork
+│   │   ├── ParkingAssignments/            # Un folder por caso de uso de escritura (slice):
+│   │   │   ├── CheckIn/                   #   CheckInCommand, CheckInResponse, CheckInHandler
+│   │   │   └── CheckOut/                  #   CheckOutCommand, CheckOutResponse, CheckOutHandler
+│   │   ├── Queries/                       # Puerto de lectura IParkingReadModel + DTOs (sin handler:
+│   │   │                                  #   no hay lógica que orquestar; el endpoint usa el puerto)
+│   │   └── Authentication/                # Subdominio genérico (ADR-0004): LoginHandler, Roles,
 │   │                                      #   puertos IOperatorCredentialStore, IAccessTokenIssuer
 │   ├── DomoNow.Parking.Infrastructure/    # Adaptador driven. Depende de Application.
 │   │   ├── Persistence/                   # ParkingDbContext, Configurations/, Migrations/, Seed
@@ -58,7 +57,7 @@ backend/
 │       ├── ErrorHandling/                 # Result → ProblemDetails, IExceptionHandler global
 │       └── Program.cs
 └── tests/
-    ├── DomoNow.Parking.Domain.UnitTests/       # Reglas R1–R5 (rápidas, sin BD)
+    ├── DomoNow.Parking.Domain.UnitTests/       # Reglas R1–R5 (rápidas, sin BD); R7 en Application.UnitTests
     ├── DomoNow.Parking.Application.UnitTests/  # Handlers con puertos falsos
     └── DomoNow.Parking.Api.IntegrationTests/   # WebApplicationFactory + PostgreSQL local real (R6, auth)
                                                 #   BD dedicada `domonow_parking_tests`, recreada por migraciones
@@ -79,7 +78,7 @@ backend/
 - **Salida (driven)**:
   - Escritura: `IParkingSpotRepository` — un repositorio **por agregado**, carga la raíz con solo su asignación activa. No existe repositorio de `ParkingAssignment` (es entidad interna).
   - Lectura: `IParkingReadModel` — proyecciones directas a DTO para listados (sin pasar por el agregado).
-  - `IUnitOfWork` para confirmar la transacción. El reloj es `TimeProvider` (BCL) → tests deterministas.
+  - `IUnitOfWork.CommitAsync()` confirma la transacción y devuelve `Result` (traduce conflictos de BD a errores de negocio). El reloj es `TimeProvider` (BCL) → tests deterministas.
 
 ### 2.2.1 Flujo de un caso de uso (CheckIn)
 
@@ -89,8 +88,9 @@ POST /api/parking-assignments
   → CheckInHandler (application service):
        1. Crea VOs (LicensePlate.Create…) → si falla, Validation error
        2. repo.GetByIdAsync(spotId)        → si no existe, NotFound
-       3. spot.CheckIn(plate, visitor, unit, clock.GetUtcNow())   ← la REGLA vive aquí (dominio)
-       4. unitOfWork.SaveChangesAsync()    → conflicto de versión/índice → Conflict
+       3. repo.IsVehicleInsideAsync(plate) → si ya está dentro, Conflict (R7, cruza agregados)
+       4. spot.CheckIn(plate, visitor, unit, clock.GetUtcNow())   ← R1/R2 viven aquí (dominio)
+       5. unitOfWork.CommitAsync()         → conflicto de versión/índice → Conflict (R6/R7)
   → Api: Result → 201 Created | ProblemDetails
 ```
 
@@ -116,6 +116,7 @@ Doble barrera (ADR-0002 + ADR-0003):
 2. **Base de datos** (red de seguridad): índice único parcial
    `UNIQUE (parking_spot_id) WHERE status = 'Active'`.
    Cualquiera de los dos fallos se traduce a `409 Conflict`.
+3. **R7 (placa)**: índice único parcial `UNIQUE (license_plate) WHERE status = 'Active'` + consulta previa en el handler (ADR-0005). Infrastructure traduce cada violación por **nombre de restricción** al error de negocio correspondiente.
 
 La validación previa sola **no** basta (check-then-act race).
 
