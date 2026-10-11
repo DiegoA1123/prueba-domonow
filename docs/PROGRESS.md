@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 1 — Backend implementado (rama `feat/backend`), pendiente revisión final y merge
-**Último paso**: Plan de backend ejecutado (10 tasks, TDD). 74/74 tests en verde (42 dominio, 14 aplicación, 18 integración contra PostgreSQL). 2 bugs detectados en verificación y corregidos (AI-USAGE #11, #12).
-**Siguiente paso**: Revisión final independiente de la rama (code-reviewer) → aprobación del usuario → merge `feat/backend` a `main` → Fase 2 (frontend).
+**Último paso**: Plan de backend ejecutado (10 tasks, TDD). Revisión final independiente hecha: 4 hallazgos importantes corregidos con TDD. **82/82 tests** (43 dominio, 14 aplicación, 25 integración contra PostgreSQL).
+**Siguiente paso**: Aprobación del usuario para merge `feat/backend` → `main` → Fase 2 (frontend).
 
 ## Tablero
 
@@ -66,6 +66,7 @@ Ninguna. (Límite del agregado aprobado por el usuario el 2026-10-10 → AI-USAG
 ## Ideas para README § "Evolución de la solución" (se redactan al final)
 
 - **Concurrencia**: mantener optimista (`xmin`) + índices parciales; la contención por parqueadero no crece con el número de propiedades, solo el volumen. `SELECT … FOR UPDATE` evaluado y descartado para asignación manual; usar `FOR UPDATE SKIP LOCKED` si se agrega "asignar automáticamente el primer libre" (muchas solicitudes compiten por las mismas filas). (AI-USAGE #10)
+- **Rate limiting detrás de proxy**: `ForwardedHeaders` para particionar por IP real; a escala, rate limiting en el API gateway.
 - **Multi-tenancy**: particionar por propiedad → la contención queda local a cada propiedad.
 - **Mensajería**: domain events + outbox (ver ADR-0003, no implementados hoy).
 - **Seguridad**: OIDC externo / refresh tokens (ver ADR-0004).
@@ -116,3 +117,14 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Secretos**: cadena de conexión, clave JWT y operador de prueba en `dotnet user-secrets` (Api y tests); contraseña del operador de prueba en `postgres-dev-credentials.txt` (ignorado por Git).
 - **Verificación**: `dotnet build` → 0 advertencias, 0 errores. `dotnet test` → 42/42 + 14/14 + 18/18 = **74/74**. Tests de concurrencia 5/5 corridas estables. Prueba de humo manual: 401 sin token, login, 30 parqueaderos con P04/P17 fuera de servicio.
 - **Siguiente**: revisión final independiente → merge con aprobación del usuario → frontend.
+
+### 2026-10-10 — Fase 1: revisión final independiente del backend
+- **Qué**: Agente revisor con contexto nuevo (Opus) revisó los 12 commits contra plan, spec y Review Focus. Resultado: 0 críticos, 4 importantes, 4 menores. Arquitectura y concurrencia (R1/R6/R7) validadas sin cambios.
+- **Corregidos con TDD** (commits `6a33088`, `d33773d`, `9dfccdf`):
+  1. `checkedOutAt` con offset (-05:00) → 500 (Npgsql exige UTC). Fix: normalizar a UTC en el dominio.
+  2. Rate limit de login global → un cliente bloqueaba a todos. Fix: partición por IP (test verificado en rojo contra el código anterior).
+  3. Faltaban tests 401/403 en escritura → 4 tests nuevos (token ausente, otra firma, vencido, sin rol).
+  4. Salida concurrente devolvía el mensaje de check-in → nuevo error neutro `Parking.ConcurrentModification`.
+- **Diferidos (menores)**: lectura en 2 consultas, validación de `?status=` y `parkingSpotId`, HTTPS/HSTS, test de doble salida vía API → README § Mejoras.
+- **Verificación**: `dotnet build` 0 advertencias; `dotnet test` **82/82** (43 + 14 + 25).
+- **Siguiente**: merge a `main` con aprobación del usuario.

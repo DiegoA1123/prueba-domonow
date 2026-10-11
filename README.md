@@ -44,7 +44,7 @@ dotnet run --project backend/src/DomoNow.Parking.Api --launch-profile http
 
 | Método | Ruta | Autorización | Descripción |
 |--------|------|--------------|-------------|
-| POST | `/api/auth/login` | Anónimo (máx. 10/min) | Inicia sesión y devuelve un JWT |
+| POST | `/api/auth/login` | Anónimo (máx. 10/min por IP) | Inicia sesión y devuelve un JWT |
 | GET | `/api/parking-spots?status=Available` | Autenticado | Parqueaderos con estado, disponibilidad y vehículo actual; filtro opcional por estado |
 | GET | `/api/parking-assignments/active` | Autenticado | Vehículos que están dentro de la propiedad |
 | POST | `/api/parking-assignments` | Rol `Operator` | Registra un ingreso `{ parkingSpotId, licensePlate, visitorName, destinationUnit }` |
@@ -65,9 +65,9 @@ dotnet test backend/DomoNow.Parking.slnx
 
 | Proyecto | Qué prueba | Tests |
 |----------|-----------|-------|
-| `Domain.UnitTests` | Value objects y agregado `ParkingSpot`: reglas R1–R5 sin base de datos | 42 |
+| `Domain.UnitTests` | Value objects y agregado `ParkingSpot`: reglas R1–R5 sin base de datos | 43 |
 | `Application.UnitTests` | Casos de uso con puertos falsos: R7, errores de validación, login | 14 |
-| `Api.IntegrationTests` | API completa contra PostgreSQL real: autenticación, flujos, errores y **concurrencia** (20 ingresos simultáneos al mismo parqueadero → exactamente 1 éxito; misma placa en 2 parqueaderos a la vez → 1 éxito) | 18 |
+| `Api.IntegrationTests` | API completa contra PostgreSQL real: autenticación (401/403, token vencido o con otra firma, rate limit por IP), flujos, errores y **concurrencia** (20 ingresos simultáneos al mismo parqueadero → exactamente 1 éxito; misma placa en 2 parqueaderos a la vez → 1 éxito; 10 salidas simultáneas → 1 éxito) | 25 |
 
 Las pruebas de integración recrean la base `domonow_parking_tests` en cada corrida. No se usan SQLite ni InMemory porque no reproducen `xmin`, los índices parciales ni la concurrencia real.
 
@@ -93,7 +93,12 @@ Resumen en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); decisiones formales e
 
 ## Qué mejoraría con más tiempo
 
-_Pendiente._
+Backend (hallazgos menores de la revisión con IA, conscientemente diferidos):
+
+- Leer parqueaderos y asignaciones activas en **una sola consulta** (hoy son dos; un ingreso entre ambas puede mostrar por un instante un parqueadero ocupado sin placa).
+- Validar explícitamente el filtro `?status=` (hoy `?status=7` devuelve lista vacía) y exigir `parkingSpotId` en el cuerpo (hoy su ausencia da 404 en lugar de 400).
+- HTTPS/HSTS fuera de Development, o documentar la terminación TLS en el proxy; detrás de un proxy, `ForwardedHeaders` para que el rate limit por IP vea la IP real.
+- Refresh tokens y revocación; endpoint de cancelación de asignaciones; volver a poner en servicio un parqueadero.
 
 ## Evolución de la solución
 
