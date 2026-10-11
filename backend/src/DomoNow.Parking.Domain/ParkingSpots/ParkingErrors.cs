@@ -22,6 +22,9 @@ public static class ParkingErrors
     public static readonly Error SpotAlreadyTaken = Error.Conflict(
         "Parking.SpotAlreadyTaken", "El parqueadero acaba de ser asignado por otra solicitud. Actualice e intente de nuevo.");
 
+    public static readonly Error ConcurrentModification = Error.Conflict(
+        "Parking.ConcurrentModification", "El parqueadero fue modificado por otra solicitud. Actualice e intente de nuevo.");
+
     public static readonly Error VehicleAlreadyInsideConflict = Error.Conflict(
         "Parking.VehicleAlreadyInside", "El vehículo ya se encuentra dentro de la propiedad.");
 

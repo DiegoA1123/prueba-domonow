@@ -19,7 +19,8 @@ public sealed class UnitOfWork(ParkingDbContext dbContext) : IUnitOfWork
         catch (DbUpdateConcurrencyException)
         {
             // Otra transacción modificó el mismo parqueadero (xmin cambió): perdimos la carrera (R6).
-            return ParkingErrors.SpotAlreadyTaken;
+            // Mensaje neutro: aplica tanto a ingresos como a salidas concurrentes.
+            return ParkingErrors.ConcurrentModification;
         }
         catch (DbUpdateException exception)
             when (IsUniqueViolation(exception, ParkingAssignmentConfiguration.ActiveSpotIndex))
