@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web"><PropertyGroup>  <UserSecretsId>95f5bd7a-17c1-43db-90f4-2313568f6911</UserSecretsId>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\DomoNow.Parking.Application\DomoNow.Parking.Application.csproj" />
     <ProjectReference Include="..\DomoNow.Parking.Infrastructure\DomoNow.Parking.Infrastructure.csproj" />
