@@ -1,0 +1,14 @@
+.check-in {
+  display: grid;
+  gap: 0.25rem;
+  min-width: min(22rem, 80vw);
+  padding-top: 0.5rem;
+}
+
+.check-in__error {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--status-occupied-bg);
+  color: var(--status-occupied);
+}
