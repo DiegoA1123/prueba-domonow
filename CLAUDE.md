@@ -59,9 +59,13 @@ dotnet run --project backend/src/DomoNow.Parking.Api --launch-profile http      
 cd backend && dotnet tool run dotnet-ef migrations add <Nombre> -p src/DomoNow.Parking.Infrastructure -s src/DomoNow.Parking.Api -o Persistence/Migrations
 cd backend && dotnet tool run dotnet-ef database update -p src/DomoNow.Parking.Infrastructure -s src/DomoNow.Parking.Api
 
-# Frontend
-cd frontend && npm start
-cd frontend && npm test
+# Frontend (verificados 2026-10-11) — en el sandbox de Claude correr con PowerShell y PATH de nvm:
+#   $env:Path = "C:\nvm4w\nodejs;" + $env:Path ; Set-Location frontend   (en Git Bash el shim de npm falla)
+cd frontend && npm start          # http://localhost:4200
+cd frontend && npm test           # Vitest, 52 tests
+cd frontend && npm run lint
+cd frontend && npm run build
+cd frontend && npm run format     # Prettier antes de cada commit
 ```
 
 ## 6. Entorno local

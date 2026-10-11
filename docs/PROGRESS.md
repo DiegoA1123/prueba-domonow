@@ -7,7 +7,7 @@
 
 **Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
 **Último paso**: Plan del frontend escrito (`docs/plans/2026-10-11-frontend-implementation.md`, 10 tasks); `feat/frontend` rebasada sobre `main`. Backend: 82/82 tests.
-**Siguiente paso**: Usuario revisa el plan del frontend y elige modo de ejecución → Task 1 (scaffold Angular 22).
+**Siguiente paso**: Task 10 del frontend: revisión final independiente de `feat/frontend` → push + PR → README "Evolución de la solución" + AI-USAGE final.
 
 ## Tablero
 
@@ -146,3 +146,10 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Verificación**: el usuario confirmó que la API arranca en Visual Studio. `dotnet build` 0 advertencias; `dotnet test` 82/82.
 - **Nota de entorno**: ExecutionPolicy de PowerShell del usuario en Restricted → usar `npm.cmd`/`ng.cmd` o que el usuario configure `RemoteSigned` para su cuenta.
 - **Siguiente**: merge del PR de esta corrección → retomar `feat/frontend` (rebase sobre `main`) y ejecutar el plan del frontend.
+
+### 2026-10-11 — Fase 2: frontend implementado (rama `feat/frontend`)
+- **Qué**: Tasks 1–9 del plan del frontend ejecutadas con TDD: scaffold Angular 22 + Material + ESLint, modelo de errores, sesión/interceptores/guards, login con Signal Forms, dominio + adaptador HTTP, `ParkingStore` reactivo (polling 30 s pausado con pestaña oculta), componentes, diálogo de ingreso y tablero.
+- **Verificación real en el navegador**: 7 de 8 flujos OK (login, filtro, ingreso con vista previa, placa repetida, salida, sesión vencida). Flujo 8 (apagar la API) no se ejecutó porque la API en 5080 era un proceso ajeno; cubierto por test del store. Encontrado y corregido 1 bug de UX (error del diálogo fuera de la vista). Capturas en `docs/screenshots/`.
+- **Verificación**: `npm test` → **52/52**, lint limpio, build OK. Backend sin cambios (82/82).
+- **Docs**: README (ejecutar frontend, tests, capturas), ARCHITECTURE §3, CLAUDE.md §5, AI-USAGE #16–#17.
+- **Pendiente** (Task 10): revisión final independiente de la rama, push de `feat/frontend` y PR; luego README § "Evolución de la solución", "Qué mejoraría" y sección AI Code Review / casos seleccionados de AI-USAGE.
