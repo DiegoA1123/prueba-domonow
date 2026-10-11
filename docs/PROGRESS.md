@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
-**Último paso**: Frontend implementado, verificado en navegador y revisado por agente independiente; 5 hallazgos corregidos con TDD. 58/58 tests frontend, 82/82 backend. Todo en `feat/frontend` (local, sin push).
-**Siguiente paso**: Paso 2 — push de `feat/frontend` y PR #3 → README "Evolución de la solución" → AI-USAGE final.
+**Último paso**: `feat/frontend` subida y PR #3 abierto (https://github.com/DiegoA1123/prueba-domonow/pull/3). 58/58 tests frontend, 82/82 backend.
+**Siguiente paso**: el usuario hace merge del PR #3 → README "Evolución de la solución" → AI-USAGE final (casos seleccionados + AI Code Review).
 
 ## Tablero
 
@@ -30,11 +30,12 @@
 | 1 | Api: endpoints, ProblemDetails, CORS, OpenAPI | ✅ |
 | 1 | Autenticación: login JWT, operadores (hash), roles, user-secrets (ADR-0004) | ✅ |
 | 1 | Test de integración de concurrencia (R6) | ✅ |
-| 1 | Revisión final de la rama + merge a main | ⏳ |
-| 2 | Frontend: proyecto Angular + estructura hexagonal | ⬜ |
-| 2 | Login + interceptor JWT + guard | ⬜ |
-| 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ⬜ |
-| 2 | Tests frontend (store, mappers) | ⬜ |
+| 1 | Revisión final de la rama + merge a main (PR #1, PR #2) | ✅ |
+| 2 | Frontend: proyecto Angular + estructura hexagonal | ✅ |
+| 2 | Login + interceptor JWT + guard | ✅ |
+| 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ✅ |
+| 2 | Tests frontend (store, mappers, componentes) — 58 | ✅ |
+| 2 | Revisión final + PR #3 (merge del usuario) | ⏳ |
 | 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ⬜ |
 | 3 | README completo + "Evolución de la solución" | ⬜ |
 | 3 | (Opcional) Desafío predicción de demanda · docker-compose | ⬜ |
@@ -160,3 +161,8 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Diferidos (menores)**: README § Mejoras (frontend). AI-USAGE #18.
 - **Verificación**: `npm test` **58/58**, lint limpio, build OK.
 - **Siguiente**: paso 2 — push de `feat/frontend` y PR #3.
+
+### 2026-10-11 — Fase 2: Pull Request del frontend
+- **Qué**: `feat/frontend` subida a GitHub; PR https://github.com/DiegoA1123/prueba-domonow/pull/3 (`feat/frontend` → `main`). Tablero de estado puesto al día (fases 1 y 2).
+- **Verificación**: `npm test` 58/58 sobre el árbol subido. Sin CI configurado.
+- **Siguiente**: el usuario revisa y hace merge → README § "Evolución de la solución" → AI-USAGE final.
