@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using DomoNow.Parking.Api.Endpoints;
 using DomoNow.Parking.Api.ErrorHandling;
 using DomoNow.Parking.Api.Security;
 using DomoNow.Parking.Application;
 using DomoNow.Parking.Infrastructure;
 using DomoNow.Parking.Infrastructure.Persistence;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
 const string FrontendCorsPolicy = "frontend";
@@ -28,11 +28,10 @@ builder.Services.AddCors(options => options.AddPolicy(FrontendCorsPolicy, policy
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddFixedWindowLimiter(AuthEndpoints.LoginRateLimitPolicy, limiter =>
-    {
-        limiter.PermitLimit = 10;
-        limiter.Window = TimeSpan.FromMinutes(1);
-    });
+    // Límite por IP: un cliente abusivo no puede bloquear el login de los demás operadores.
+    options.AddPolicy(AuthEndpoints.LoginRateLimitPolicy, httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
 });
 
 var app = builder.Build();

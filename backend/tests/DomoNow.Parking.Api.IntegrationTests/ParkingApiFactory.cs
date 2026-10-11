@@ -42,7 +42,7 @@ public sealed class ParkingApiFactory : WebApplicationFactory<Program>, IAsyncLi
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Parking", ConnectionString);
-        builder.UseSetting("Jwt:SigningKey", "integration-tests-signing-key-with-at-least-32-bytes!");
+        builder.UseSetting("Jwt:SigningKey", TestTokens.SigningKey);
         builder.UseSetting("SeedOperator:Username", OperatorUsername);
         builder.UseSetting("SeedOperator:Password", OperatorPassword);
         builder.UseSetting("Database:MigrateAndSeedOnStartup", "true");
