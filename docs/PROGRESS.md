@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
-**Último paso**: `feat/frontend` subida y PR #3 abierto (https://github.com/DiegoA1123/prueba-domonow/pull/3). 58/58 tests frontend, 82/82 backend.
-**Siguiente paso**: el usuario hace merge del PR #3 → README "Evolución de la solución" → AI-USAGE final (casos seleccionados + AI Code Review).
+**Último paso**: README § "Evolución de la solución" y AI-USAGE final (5 casos + AI Code Review con 3 hallazgos) redactados en `docs/final-deliverables` (sin push).
+**Siguiente paso**: revisión del usuario → quitar el aviso "En construcción" del README → PR de `docs/final-deliverables` → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
 
 ## Tablero
 
@@ -35,9 +35,9 @@
 | 2 | Login + interceptor JWT + guard | ✅ |
 | 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ✅ |
 | 2 | Tests frontend (store, mappers, componentes) — 58 | ✅ |
-| 2 | Revisión final + PR #3 (merge del usuario) | ⏳ |
-| 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ⬜ |
-| 3 | README completo + "Evolución de la solución" | ⬜ |
+| 2 | Revisión final + PR #3 (merge del usuario) | ✅ |
+| 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ✅ |
+| 3 | README completo + "Evolución de la solución" | ✅ |
 | 3 | (Opcional) Desafío predicción de demanda · docker-compose | ⬜ |
 
 Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer · ❌ descartado
@@ -166,3 +166,15 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Qué**: `feat/frontend` subida a GitHub; PR https://github.com/DiegoA1123/prueba-domonow/pull/3 (`feat/frontend` → `main`). Tablero de estado puesto al día (fases 1 y 2).
 - **Verificación**: `npm test` 58/58 sobre el árbol subido. Sin CI configurado.
 - **Siguiente**: el usuario revisa y hace merge → README § "Evolución de la solución" → AI-USAGE final.
+
+### 2026-10-11 — Fase 3: README § "Evolución de la solución" (rama `docs/final-deliverables`)
+- **Qué**: respuesta a la pregunta 15 del enunciado, cubriendo los 10 temas pedidos (escalabilidad, concurrencia, caché, BD, microservicios, observabilidad, mensajería, seguridad, multi-tenancy, cloud) en una tabla qué/por qué, más el orden de implementación.
+- **Razonamiento central**: 500.000 movimientos/día ≈ 6 escrituras/s (≈60/s en pico); lo que crece son las lecturas por polling (~330 req/s con 10.000 pantallas) → push en vez de polling; la contención sigue siendo por parqueadero → se mantiene ADR-0002; monolito modular, no microservicios.
+- **Verificado contra el código** antes de afirmarlo: `code` de parqueadero y placa activa son únicos globalmente (índices actuales) y la asignación no guarda el operador → multi-tenancy y auditoría como primeros cambios.
+- **Siguiente**: AI-USAGE final.
+- **Revisión del usuario** (opciones propuestas por la IA, elegidas por él): push con **SignalR** (grupo por propiedad, Azure SignalR Service como backplane); multi-tenancy **híbrido** (base compartida + RLS, base propia para propiedades grandes o por contrato); microservicios **a futuro** con orden y criterio de separación (*strangler*); **analítica fuera de la base principal** vía CDC; **portería sin conexión** (PWA + cola local); **sin caché distribuida del tablero** (Redis eliminado). Descartadas: SSE, reintentos idempotentes como tema propio, tablero precalculado, cuotas por tenant, resiliencia, pruebas de carga, versionado, Habeas Data, LPR, pre-registro, alertas.
+
+### 2026-10-11 — Fase 3: AI-USAGE final (rama `docs/final-deliverables`)
+- **Qué**: §1 Casos seleccionados con 5 casos del registro (#3 rechazada, #10 cuestionada y aceptada, #11 y #15 errores de la IA corregidos, #19 modificada por el ingeniero). §2 AI Code Review con 3 hallazgos de las revisiones independientes (#14 y #18): rate limit global (Sí), diálogos sobre el login tras 401 (Sí), doble acción por parqueadero (Parcialmente: severidad subida). Registro #19 añadido. Se corrigió la nota de §2, que nombraba herramientas que no se usaron.
+- **Verificación**: commits, nombres de tests y cifras citados comprobados contra `git log` y el código.
+- **Siguiente**: revisión del usuario → PR.
