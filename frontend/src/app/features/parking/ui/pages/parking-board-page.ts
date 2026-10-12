@@ -10,6 +10,7 @@ import { ParkingStore } from '../../application/parking.store';
 import { ParkingSpot } from '../../domain/parking.models';
 import { ActiveVehiclesTable } from '../components/active-vehicles-table';
 import { SpotCard } from '../components/spot-card';
+import { SpotSearchField } from '../components/spot-search-field';
 import { StatusFilter } from '../components/status-filter';
 import { CheckInDialog, CheckInDialogData } from '../dialogs/check-in-dialog';
 
@@ -23,6 +24,7 @@ import { CheckInDialog, CheckInDialogData } from '../dialogs/check-in-dialog';
     MatButtonModule,
     MatProgressBarModule,
     SpotCard,
+    SpotSearchField,
     StatusFilter,
   ],
   templateUrl: './parking-board-page.html',

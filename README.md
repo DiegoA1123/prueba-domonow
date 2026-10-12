@@ -79,7 +79,7 @@ Abrir `http://localhost:4200` e ingresar con el operador de prueba configurado e
 | `npm run lint` | angular-eslint |
 | `npm run build` | Build de producción en `frontend/dist/` |
 
-**Qué hace la pantalla:** tarjetas por parqueadero con color por estado (verde disponible, rojo ocupado con placa, visitante, unidad y tiempo transcurrido, gris fuera de servicio), filtro por estado con contadores, registro de ingreso con vista previa de la placa normalizada, salida con confirmación y la tabla de vehículos dentro. Se actualiza sola después de cada acción y cada 30 s (se pausa si la pestaña no está visible). Capturas reales en [`docs/screenshots/`](docs/screenshots/).
+**Qué hace la pantalla:** tarjetas por parqueadero con color por estado (verde disponible, rojo ocupado con placa, visitante, apto/casa y tiempo transcurrido, gris fuera de servicio), búsqueda por parqueadero, placa, visitante o apartamento (sin importar mayúsculas, tildes ni guiones) combinada con el filtro por estado con contadores, registro de ingreso con vista previa de la placa normalizada, salida con confirmación y la tabla de vehículos dentro. Se actualiza sola después de cada acción y cada 30 s (se pausa si la pestaña no está visible), por eso no tiene botón "Actualizar"; solo ofrece "Reintentar" si la carga falla. El destino se rotula "Apto/casa": en Colombia "unidad" se entiende como el conjunto residencial. Capturas reales en [`docs/screenshots/`](docs/screenshots/).
 
 | Tablero (filtro "Ocupados") | Placa ya dentro (error del backend) |
 |---|---|
@@ -100,13 +100,13 @@ dotnet test backend/DomoNow.Parking.slnx
 
 Las pruebas de integración recrean la base `domonow_parking_tests` en cada corrida. No se usan SQLite ni InMemory porque no reproducen `xmin`, los índices parciales ni la concurrencia real.
 
-Frontend (`cd frontend && npm test`): **58 pruebas** (Vitest).
+Frontend (`cd frontend && npm test`): **69 pruebas** (Vitest).
 
 | Área | Qué prueba |
 |------|-----------|
 | `core/http` | Traducción de ProblemDetails a mensajes en español (sin conexión, 401, 429, genérico) |
 | `core/auth` | Sesión en signals + `sessionStorage`, interceptor JWT solo hacia la API, 401 → login con aviso, página de login (Signal Forms) |
-| `features/parking` | Reglas de placa, mapeo DTO → dominio, adaptador HTTP, **store reactivo** (contadores, filtro, polling cada 30 s pausado con la pestaña oculta, timeout de 10 s si la API se cuelga, último tablero conservado si la API falla, una sola acción por parqueadero), tarjeta, diálogo de ingreso, página del tablero (cierra diálogos al salir, sin estados vacíos engañosos) |
+| `features/parking` | Reglas de placa, búsqueda (código, placa, visitante, apartamento), mapeo DTO → dominio, adaptador HTTP, **store reactivo** (contadores, filtro, polling cada 30 s pausado con la pestaña oculta, timeout de 10 s si la API se cuelga, último tablero conservado si la API falla, una sola acción por parqueadero), tarjeta, diálogo de ingreso, página del tablero (cierra diálogos al salir, sin estados vacíos engañosos) |
 
 ## Decisiones de arquitectura
 

@@ -62,7 +62,7 @@ export class CheckInDialog {
     required(path.visitorName, { message: 'El nombre del visitante es obligatorio.' });
     minLength(path.visitorName, 2, { message: 'Mínimo 2 caracteres.' });
     maxLength(path.visitorName, 100, { message: 'Máximo 100 caracteres.' });
-    required(path.destinationUnit, { message: 'La unidad que visita es obligatoria.' });
+    required(path.destinationUnit, { message: 'Indique el apartamento o casa que visita.' });
     maxLength(path.destinationUnit, 20, { message: 'Máximo 20 caracteres.' });
   });
 

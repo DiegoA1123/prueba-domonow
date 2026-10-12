@@ -8,10 +8,12 @@
         </p>
       }
     </div>
-    <button mat-stroked-button type="button" (click)="store.refresh()">Actualizar</button>
   </header>
 
-  <app-status-filter [counts]="store.counts()" [(selected)]="store.filter" />
+  <div class="board__toolbar">
+    <app-spot-search-field [(term)]="store.search" />
+    <app-status-filter [counts]="store.counts()" [(selected)]="store.filter" />
+  </div>
 
   @if (store.isInitialLoading()) {
     <mat-progress-bar mode="indeterminate" aria-label="Cargando parqueaderos" />
@@ -35,7 +37,13 @@
       />
     } @empty {
       @if (store.loadState() === 'ready') {
-        <p class="board__empty">No hay parqueaderos con este estado.</p>
+        <p class="board__empty">
+          @if (store.search().trim(); as term) {
+            Ningún parqueadero coincide con «{{ term }}».
+          } @else {
+            No hay parqueaderos con este estado.
+          }
+        </p>
       }
     }
   </div>
