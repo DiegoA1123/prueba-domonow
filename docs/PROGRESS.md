@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 3 — Entrega. Backend, frontend, mejoras de UX y documentación final en `main` (PR #1–#5).
-**Último paso**: revisión final de la entrega (rama `docs/final-review`): README alineado con la app actual y capturas nuevas.
-**Siguiente paso**: merge del PR de `docs/final-review` (usuario) → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
+**Último paso**: PR #7 (revisión final) fusionado. Corregidos los dos detalles visuales de la revisión en `fix/board-visual-polish`.
+**Siguiente paso**: merge del PR de `fix/board-visual-polish` (usuario) → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
 
 ## Tablero
 
@@ -198,3 +198,9 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **README**: quitada la mención al botón "Actualizar" en Mejoras; Angular CLI global no es requisito; `DestinationUnit` = apartamento o casa. **Capturas** retomadas (01–04) con la búsqueda y "Apto/casa", y una nueva `06-busqueda-sin-tildes.jpg`; 05 sigue vigente. Los datos de prueba usados se retiraron (0 ocupados al terminar).
 - **Observaciones visuales sin corregir**: la etiqueta flotante del primer campo del diálogo de ingreso queda recortada arriba cuando no hay mensaje de error; en la vista "Todos" las tarjetas disponibles se estiran a la altura de una ocupada de la misma fila.
 - **Siguiente**: merge del PR (usuario) → dar acceso al evaluador.
+
+### 2026-10-11 — Fase 3: detalles visuales de la revisión final (rama `fix/board-visual-polish`)
+- **Etiqueta recortada en el diálogo de ingreso**: causa confirmada en el navegador: la regla de Material `.mat-mdc-dialog-title + .mat-mdc-dialog-content` anulaba el `padding-top` del componente (0 px); la etiqueta flotante quedaba 7 px por encima del borde del contenido con scroll. Con error del backend no pasaba porque el mensaje separa título y contenido. Corrección: selector `.check-in.mat-mdc-dialog-content` (más específico). Verificado: padding 8 px y etiqueta dentro del contenido.
+- **Tarjetas estiradas**: `align-items: start` en la grilla del tablero; una tarjeta disponible ya no toma la altura de una ocupada de la misma fila. Verificado en el navegador con un ingreso de prueba (retirado después).
+- **Sin test automatizado**: son defectos de layout que jsdom no calcula; la verificación fue visual y por estilos computados en el navegador.
+- **Verificación**: `npm test` 69/69, lint limpio, build OK.

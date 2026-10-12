@@ -52,6 +52,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   gap: 1rem;
+  // Cada tarjeta mide lo que su contenido: una disponible no se estira hasta la altura de una
+  // ocupada de la misma fila.
+  align-items: start;
 }
 
 .board__empty {
