@@ -14,7 +14,7 @@ Solución Full Stack para la prueba técnica de OFIMA SAS: registrar el ingreso 
 ## Requisitos previos
 
 - .NET SDK 10.0.401+
-- Node.js 24 LTS (recomendado vía nvm) y Angular CLI 22
+- Node.js 24 LTS (recomendado vía nvm). Angular CLI no hace falta instalarlo global: los scripts de `npm` usan el del proyecto.
 - PostgreSQL 17
 
 ## Configurar la base de datos
@@ -81,9 +81,9 @@ Abrir `http://localhost:4200` e ingresar con el operador de prueba configurado e
 
 **Qué hace la pantalla:** tarjetas por parqueadero con color por estado (verde disponible, rojo ocupado con placa, visitante, apto/casa y tiempo transcurrido, gris fuera de servicio), búsqueda por parqueadero, placa, visitante o apartamento (sin importar mayúsculas, tildes ni guiones) combinada con el filtro por estado con contadores, registro de ingreso con vista previa de la placa normalizada, salida con confirmación y la tabla de vehículos dentro. Se actualiza sola después de cada acción y cada 30 s (se pausa si la pestaña no está visible), por eso no tiene botón "Actualizar"; solo ofrece "Reintentar" si la carga falla. El destino se rotula "Apto/casa": en Colombia "unidad" se entiende como el conjunto residencial. Capturas reales en [`docs/screenshots/`](docs/screenshots/).
 
-| Tablero (filtro "Ocupados") | Placa ya dentro (error del backend) |
-|---|---|
-| ![Tablero](docs/screenshots/01-tablero-filtro-ocupados.jpg) | ![Error placa](docs/screenshots/03-ingreso-placa-ya-dentro.jpg) |
+| Tablero (filtro "Ocupados") | Búsqueda ("maria" encuentra a "María") | Placa ya dentro (error del backend) |
+|---|---|---|
+| ![Tablero](docs/screenshots/01-tablero-filtro-ocupados.jpg) | ![Búsqueda](docs/screenshots/06-busqueda-sin-tildes.jpg) | ![Error placa](docs/screenshots/03-ingreso-placa-ya-dentro.jpg) |
 
 ## Ejecutar las pruebas
 
@@ -126,7 +126,7 @@ Resumen en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); decisiones formales e
 - Las fechas se almacenan en UTC; el frontend las muestra en la zona horaria del navegador.
 - Solo los operadores autenticados con rol `Operator` registran ingresos y salidas. Un operador de prueba se crea en Development con credenciales tomadas de `dotnet user-secrets`.
 - El estado "Cancelada" existe en el modelo, pero no se expone endpoint de cancelación.
-- `DestinationUnit` es texto libre (no se valida contra un maestro de unidades, que pertenece a otro contexto de DomoNow).
+- `DestinationUnit` es el apartamento o casa que visita (el enunciado lo llama "unidad"; en pantalla se rotula "Apto/casa"). Es texto libre: no se valida contra un maestro de unidades, que pertenece a otro contexto de DomoNow.
 
 ## Qué mejoraría con más tiempo
 
@@ -141,8 +141,8 @@ Frontend (hallazgos menores de la revisión con IA, conscientemente diferidos):
 
 - `disableClose` en los diálogos para que un doble clic en la tarjeta no cierre el diálogo recién abierto.
 - Aplicar localmente el resultado de un ingreso/salida en vez de esperar la recarga (hoy la tarjeta muestra el estado anterior durante una petición).
-- Indicador visual en "Actualizar"/"Reintentar" mientras se recarga.
-- Validar nombre y unidad sobre el texto recortado (hoy "   " pasa en el cliente y el backend responde 400, que sí se muestra).
+- Indicador visual en "Reintentar" mientras se recarga.
+- Validar nombre y apartamento sobre el texto recortado (hoy "   " pasa en el cliente y el backend responde 400, que sí se muestra).
 - Comparar el origen completo de la URL en el interceptor JWT en lugar de `startsWith`.
 
 ## Evolución de la solución

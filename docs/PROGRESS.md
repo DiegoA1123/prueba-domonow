@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 3 — Entrega. Backend, frontend, mejoras de UX y documentación final en `main` (PR #1–#5).
-**Último paso**: PR #5 (mejoras de UX) fusionado. AI-USAGE: el caso de usabilidad (#20) reemplaza al caso 5 seleccionado; `angular.json` sin pregunta de analytics. Rama `docs/ai-usage-operator-case`.
-**Siguiente paso**: merge del PR #6 (usuario) → revisión final de la entrega desde cero → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
+**Último paso**: revisión final de la entrega (rama `docs/final-review`): README alineado con la app actual y capturas nuevas.
+**Siguiente paso**: merge del PR de `docs/final-review` (usuario) → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
 
 ## Tablero
 
@@ -191,3 +191,10 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Qué**: el registro #20 (mejoras de UX detectadas por el ingeniero) reemplaza al caso 5 de §1 Casos seleccionados, decisión del ingeniero. El enunciado pide 3–5 casos y el ingeniero eligió no pasarse; la sección de evolución sigue en el registro #19. `frontend/angular.json`: `"analytics": false` (cambio hecho por el ingeniero en otra sesión, ajustado al formato del archivo), para que el evaluador no reciba la pregunta de analytics de Angular CLI.
 - **Verificación**: `npm test` 69/69, `npm run build` OK.
 - **Siguiente**: merge del PR (usuario) → revisión final de la entrega desde cero.
+
+### 2026-10-11 — Fase 3: revisión final de la entrega (rama `docs/final-review`)
+- **Verificación sobre `main`**: frontend `npm test` 69/69, lint, `format:check` y build limpios; backend unitarias 43 + 14 OK. **Clon limpio desde GitHub**: backend compila con 0 advertencias; frontend `npm ci` + 69/69 + build OK (no depende de archivos locales). Sin secretos versionados (`postgres-dev-credentials.txt` ignorado; `appsettings*.json` sin contraseñas ni claves).
+- **Integración (25) no ejecutada**: Smart App Control de Windows (estado 1, activado) bloqueó `DomoNow.Parking.Api.dll` al cargarla `testhost.exe` (error 0x800711C7, registrado en el log CodeIntegrity). Es configuración de seguridad del sistema; no se tocó. El backend no cambió desde la última corrida 82/82 (salvo una sangría idéntica a la original).
+- **README**: quitada la mención al botón "Actualizar" en Mejoras; Angular CLI global no es requisito; `DestinationUnit` = apartamento o casa. **Capturas** retomadas (01–04) con la búsqueda y "Apto/casa", y una nueva `06-busqueda-sin-tildes.jpg`; 05 sigue vigente. Los datos de prueba usados se retiraron (0 ocupados al terminar).
+- **Observaciones visuales sin corregir**: la etiqueta flotante del primer campo del diálogo de ingreso queda recortada arriba cuando no hay mensaje de error; en la vista "Todos" las tarjetas disponibles se estiran a la altura de una ocupada de la misma fila.
+- **Siguiente**: merge del PR (usuario) → dar acceso al evaluador.
