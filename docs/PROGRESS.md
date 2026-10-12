@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
-**Último paso**: PR #3 fusionado por el usuario. README § "Evolución de la solución" redactada en la rama `docs/final-deliverables` (pendiente de revisión del usuario).
-**Siguiente paso**: AI-USAGE final (3–5 casos seleccionados + AI Code Review con 3 hallazgos) → revisión final → PR de `docs/final-deliverables`.
+**Último paso**: README § "Evolución de la solución" y AI-USAGE final (5 casos + AI Code Review con 3 hallazgos) redactados en `docs/final-deliverables` (sin push).
+**Siguiente paso**: revisión del usuario → quitar el aviso "En construcción" del README → PR de `docs/final-deliverables` → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
 
 ## Tablero
 
@@ -36,8 +36,8 @@
 | 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ✅ |
 | 2 | Tests frontend (store, mappers, componentes) — 58 | ✅ |
 | 2 | Revisión final + PR #3 (merge del usuario) | ✅ |
-| 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ⬜ |
-| 3 | README completo + "Evolución de la solución" | 🔄 |
+| 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ✅ |
+| 3 | README completo + "Evolución de la solución" | ✅ |
 | 3 | (Opcional) Desafío predicción de demanda · docker-compose | ⬜ |
 
 Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer · ❌ descartado
@@ -173,3 +173,8 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Verificado contra el código** antes de afirmarlo: `code` de parqueadero y placa activa son únicos globalmente (índices actuales) y la asignación no guarda el operador → multi-tenancy y auditoría como primeros cambios.
 - **Siguiente**: AI-USAGE final.
 - **Revisión del usuario** (opciones propuestas por la IA, elegidas por él): push con **SignalR** (grupo por propiedad, Azure SignalR Service como backplane); multi-tenancy **híbrido** (base compartida + RLS, base propia para propiedades grandes o por contrato); microservicios **a futuro** con orden y criterio de separación (*strangler*); **analítica fuera de la base principal** vía CDC; **portería sin conexión** (PWA + cola local); **sin caché distribuida del tablero** (Redis eliminado). Descartadas: SSE, reintentos idempotentes como tema propio, tablero precalculado, cuotas por tenant, resiliencia, pruebas de carga, versionado, Habeas Data, LPR, pre-registro, alertas.
+
+### 2026-10-11 — Fase 3: AI-USAGE final (rama `docs/final-deliverables`)
+- **Qué**: §1 Casos seleccionados con 5 casos del registro (#3 rechazada, #10 cuestionada y aceptada, #11 y #15 errores de la IA corregidos, #19 modificada por el ingeniero). §2 AI Code Review con 3 hallazgos de las revisiones independientes (#14 y #18): rate limit global (Sí), diálogos sobre el login tras 401 (Sí), doble acción por parqueadero (Parcialmente: severidad subida). Registro #19 añadido. Se corrigió la nota de §2, que nombraba herramientas que no se usaron.
+- **Verificación**: commits, nombres de tests y cifras citados comprobados contra `git log` y el código.
+- **Siguiente**: revisión del usuario → PR.
