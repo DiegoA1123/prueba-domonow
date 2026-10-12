@@ -5,9 +5,9 @@
 
 ## Estado actual
 
-**Fase**: 3 — Entrega. Backend, frontend, mejoras de UX, revisión final y documentación en `main` (PR #1–#8).
-**Último paso**: PR #9 (predicción de demanda) fusionado. `docker-compose` (PostgreSQL + API + frontend + pruebas) en `feat/docker-compose`, verificado: 82/82 en contenedor y login en el navegador.
-**Siguiente paso**: merge del PR de `feat/docker-compose` (usuario) → dar acceso al evaluador (repo público o colaborador; acción del usuario). Entrega lista.
+**Fase**: ✅ **Entrega lista.** Backend, frontend, mejoras de UX, revisión final, predicción de demanda y docker-compose en `main` (PR #1–#10).
+**Último paso**: PR #10 (docker-compose) fusionado y ramas fusionadas borradas; en el repositorio solo queda `main`. Verificación final: frontend 69/69, backend 82/82 (en contenedor), lint y build limpios.
+**Siguiente paso**: dar acceso al evaluador (repositorio público o invitación como colaborador). Acción del usuario en GitHub; no requiere cambios en el código.
 
 ## Tablero
 
@@ -41,6 +41,8 @@
 | 3 | README completo + "Evolución de la solución" | ✅ |
 | 3 | (Opcional) Desafío predicción de demanda | ✅ |
 | 3 | (Opcional) docker-compose | ✅ |
+| 3 | Entrega: repositorio con solo `main` (PR #1–#10 fusionados) | ✅ |
+| 3 | Acceso del evaluador (público o colaborador) | ⏳ acción del usuario |
 
 Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer · ❌ descartado
 
@@ -217,3 +219,9 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Hallazgo previo**: Docker Desktop 4.94 **ya estaba instalado** (por usuario, en `%LOCALAPPDATA%\Programs\DockerDesktop`, motor sobre WSL2). Las comprobaciones anteriores corrían en el sandbox de Claude, que no lo veía; `winget` en la terminal del usuario lo encontró. Solo había que iniciarlo. AI-USAGE #23.
 - **Qué**: `backend/Dockerfile` (etapas build → tests → runtime; contexto la raíz por el `.editorconfig`), `frontend/Dockerfile` (build de Angular + nginx con fallback de SPA), `docker-compose.yml` (PostgreSQL 17 sin puerto publicado, API en 5080 con `Production` y variables de entorno, web en 4200, servicio `tests` en el perfil `tests`), `.env.example` con valores locales de ejemplo (`.env` ignorado), `.dockerignore`. README § "Opción rápida: todo con Docker". Sin cambios de código.
 - **Verificación** (terminal del usuario): `docker compose up --build` → base sana, migración aplicada, API en Production; login + `GET /api/parking-spots` (30 parqueaderos); web 200 en `/` y `/login`; preflight CORS 204. `docker compose run --rm tests` → **82/82** (primera corrida de integración desde el bloqueo de Smart App Control). Login y tablero en el navegador contra el stack de Docker.
+
+### 2026-10-12 — Entrega lista
+- **Estado**: PR #1–#10 fusionados por el usuario; ramas fusionadas borradas en local y en GitHub (solo queda `main`).
+- **Entregables del enunciado**: `/backend`, `/frontend`, `README.md` (ejecución con y sin Docker, base de datos, arquitectura, supuestos, mejoras, evolución), `AI-USAGE.md` (5 casos + AI Code Review con 3 hallazgos + registro de 23 entradas). Opcionales: `docs/PREDICCION-DEMANDA.md` y `docker-compose.yml`.
+- **Última verificación**: frontend 69/69, lint, formato y build; backend 82/82 con `docker compose run --rm tests`; clon limpio desde GitHub compila y pasa las pruebas del frontend.
+- **Pendiente (usuario)**: dar acceso al evaluador.
