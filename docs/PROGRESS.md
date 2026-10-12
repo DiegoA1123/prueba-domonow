@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
-**Último paso**: `feat/frontend` subida y PR #3 abierto (https://github.com/DiegoA1123/prueba-domonow/pull/3). 58/58 tests frontend, 82/82 backend.
-**Siguiente paso**: el usuario hace merge del PR #3 → README "Evolución de la solución" → AI-USAGE final (casos seleccionados + AI Code Review).
+**Último paso**: PR #3 fusionado por el usuario. README § "Evolución de la solución" redactada en la rama `docs/final-deliverables` (pendiente de revisión del usuario).
+**Siguiente paso**: AI-USAGE final (3–5 casos seleccionados + AI Code Review con 3 hallazgos) → revisión final → PR de `docs/final-deliverables`.
 
 ## Tablero
 
@@ -35,9 +35,9 @@
 | 2 | Login + interceptor JWT + guard | ✅ |
 | 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ✅ |
 | 2 | Tests frontend (store, mappers, componentes) — 58 | ✅ |
-| 2 | Revisión final + PR #3 (merge del usuario) | ⏳ |
+| 2 | Revisión final + PR #3 (merge del usuario) | ✅ |
 | 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ⬜ |
-| 3 | README completo + "Evolución de la solución" | ⬜ |
+| 3 | README completo + "Evolución de la solución" | 🔄 |
 | 3 | (Opcional) Desafío predicción de demanda · docker-compose | ⬜ |
 
 Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer · ❌ descartado
@@ -166,3 +166,9 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Qué**: `feat/frontend` subida a GitHub; PR https://github.com/DiegoA1123/prueba-domonow/pull/3 (`feat/frontend` → `main`). Tablero de estado puesto al día (fases 1 y 2).
 - **Verificación**: `npm test` 58/58 sobre el árbol subido. Sin CI configurado.
 - **Siguiente**: el usuario revisa y hace merge → README § "Evolución de la solución" → AI-USAGE final.
+
+### 2026-10-11 — Fase 3: README § "Evolución de la solución" (rama `docs/final-deliverables`)
+- **Qué**: respuesta a la pregunta 15 del enunciado, cubriendo los 10 temas pedidos (escalabilidad, concurrencia, caché, BD, microservicios, observabilidad, mensajería, seguridad, multi-tenancy, cloud) en una tabla qué/por qué, más el orden de implementación.
+- **Razonamiento central**: 500.000 movimientos/día ≈ 6 escrituras/s (≈60/s en pico); lo que crece son las lecturas por polling (~330 req/s con 10.000 pantallas) → push en vez de polling; la contención sigue siendo por parqueadero → se mantiene ADR-0002; monolito modular, no microservicios.
+- **Verificado contra el código** antes de afirmarlo: `code` de parqueadero y placa activa son únicos globalmente (índices actuales) y la asignación no guarda el operador → multi-tenancy y auditoría como primeros cambios.
+- **Siguiente**: AI-USAGE final.
