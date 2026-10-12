@@ -1,0 +1,14 @@
+.git
+.vs
+.vscode
+.superpowers
+.claude
+**/bin
+**/obj
+**/TestResults
+**/node_modules
+**/.angular
+**/dist
+.env
+*-credentials.txt
+docs

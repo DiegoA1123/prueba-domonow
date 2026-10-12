@@ -6,8 +6,8 @@
 ## Estado actual
 
 **Fase**: 3 — Entrega. Backend, frontend, mejoras de UX, revisión final y documentación en `main` (PR #1–#8).
-**Último paso**: PR #8 (detalles visuales) fusionado; ramas fusionadas borradas. Desafío adicional de predicción de demanda redactado en `docs/PREDICCION-DEMANDA.md` (rama `docs/demand-forecast`).
-**Siguiente paso**: merge del PR de `docs/demand-forecast` (usuario) → dar acceso al evaluador (repo público o colaborador; acción del usuario). Entrega lista.
+**Último paso**: PR #9 (predicción de demanda) fusionado. `docker-compose` (PostgreSQL + API + frontend + pruebas) en `feat/docker-compose`, verificado: 82/82 en contenedor y login en el navegador.
+**Siguiente paso**: merge del PR de `feat/docker-compose` (usuario) → dar acceso al evaluador (repo público o colaborador; acción del usuario). Entrega lista.
 
 ## Tablero
 
@@ -40,7 +40,7 @@
 | 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ✅ |
 | 3 | README completo + "Evolución de la solución" | ✅ |
 | 3 | (Opcional) Desafío predicción de demanda | ✅ |
-| 3 | (Opcional) docker-compose | ⬜ sin decidir (Docker no está instalado: no se podría verificar) |
+| 3 | (Opcional) docker-compose | ✅ |
 
 Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer · ❌ descartado
 
@@ -212,3 +212,8 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Aportes del ingeniero tras revisar**: vehículos que pernoctan o llevan días dentro (reducen la capacidad del día siguiente), detalle de los eventos en salones sociales (apartamento, horario, invitados) y promedio de eventos por semana. AI-USAGE #22.
 - **Verificación**: documentación únicamente; enlaces del README revisados.
 - **Siguiente**: merge del PR → acceso del evaluador.
+
+### 2026-10-12 — Fase 3: docker-compose (rama `feat/docker-compose`)
+- **Hallazgo previo**: Docker Desktop 4.94 **ya estaba instalado** (por usuario, en `%LOCALAPPDATA%\Programs\DockerDesktop`, motor sobre WSL2). Las comprobaciones anteriores corrían en el sandbox de Claude, que no lo veía; `winget` en la terminal del usuario lo encontró. Solo había que iniciarlo. AI-USAGE #23.
+- **Qué**: `backend/Dockerfile` (etapas build → tests → runtime; contexto la raíz por el `.editorconfig`), `frontend/Dockerfile` (build de Angular + nginx con fallback de SPA), `docker-compose.yml` (PostgreSQL 17 sin puerto publicado, API en 5080 con `Production` y variables de entorno, web en 4200, servicio `tests` en el perfil `tests`), `.env.example` con valores locales de ejemplo (`.env` ignorado), `.dockerignore`. README § "Opción rápida: todo con Docker". Sin cambios de código.
+- **Verificación** (terminal del usuario): `docker compose up --build` → base sana, migración aplicada, API en Production; login + `GET /api/parking-spots` (30 parqueaderos); web 200 en `/` y `/login`; preflight CORS 204. `docker compose run --rm tests` → **82/82** (primera corrida de integración desde el bloqueo de Smart App Control). Login y tablero en el navegador contra el stack de Docker.
