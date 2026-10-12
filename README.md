@@ -171,7 +171,7 @@ Frontend (hallazgos menores de la revisión con IA, conscientemente diferidos):
 
 ## Desafío adicional: predicción de demanda
 
-Diseño (sin implementación) en [`docs/PREDICCION-DEMANDA.md`](docs/PREDICCION-DEMANDA.md): ocupación por propiedad y franja horaria con LightGBM entrenado en Python y exportado a ONNX, predicción por lotes que .NET expone y Angular muestra como mapa de calor. Dos ideas propias del dominio: registrar los ingresos rechazados "sin cupo", porque la ocupación topada oculta la demanda real en los picos, y usar las reservas de zonas comunes de DomoNow como señal anticipada de visitas.
+Diseño (sin implementación) en [`docs/PREDICCION-DEMANDA.md`](docs/PREDICCION-DEMANDA.md): ocupación por propiedad y franja horaria con LightGBM entrenado en Python y exportado a ONNX, predicción por lotes que .NET expone y Angular muestra como mapa de calor. Señales propias del dominio: los ingresos rechazados "sin cupo" (la ocupación topada oculta la demanda real en los picos), los vehículos que pernoctan o llevan días dentro (reducen la capacidad del día siguiente) y los eventos en salones sociales de DomoNow, con sus invitados y el promedio de eventos por semana de la propiedad.
 
 ## Uso de IA
 

@@ -207,7 +207,8 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Verificación**: `npm test` 69/69, lint limpio, build OK.
 
 ### 2026-10-12 — Fase 3: desafío adicional de predicción de demanda (rama `docs/demand-forecast`)
-- **Qué**: `docs/PREDICCION-DEMANDA.md` (~1 página, 612 palabras) con los 8 puntos del §16: datos, variables, algoritmo, entrenamiento, medición, integración .NET/Angular, producción y degradación. Enlazado desde el README (sección nueva antes de "Uso de IA").
+- **Qué**: `docs/PREDICCION-DEMANDA.md` (~1 página, unas 650 palabras) con los 8 puntos del §16: datos, variables, algoritmo, entrenamiento, medición, integración .NET/Angular, producción y degradación. Enlazado desde el README (sección nueva antes de "Uso de IA").
 - **Decisiones del ingeniero**: documento aparte; entrenamiento en Python + exportación ONNX (predicción por lotes, la API solo lee `demand_forecasts`); incluir el evento "sin cupo" (la ocupación topada oculta la demanda real) y las reservas de zonas comunes como señal. AI-USAGE #21.
+- **Aportes del ingeniero tras revisar**: vehículos que pernoctan o llevan días dentro (reducen la capacidad del día siguiente), detalle de los eventos en salones sociales (apartamento, horario, invitados) y promedio de eventos por semana. AI-USAGE #22.
 - **Verificación**: documentación únicamente; enlaces del README revisados.
 - **Siguiente**: merge del PR → acceso del evaluador.
