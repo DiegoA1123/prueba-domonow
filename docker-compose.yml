@@ -1,0 +1,62 @@
+# Entorno local completo: PostgreSQL + API + frontend.
+#   cp .env.example .env        (Windows: copy .env.example .env)
+#   docker compose up --build   → http://localhost:4200  (API en http://localhost:5080)
+#   docker compose run --rm tests   → pruebas del backend (unitarias + integración)
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en .env (ver .env.example)}
+      POSTGRES_DB: domonow_parking
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d domonow_parking"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    # Sin puerto publicado: solo la usan los contenedores y no choca con un PostgreSQL local en 5432.
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: runtime
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Parking: Host=db;Port=5432;Database=domonow_parking;Username=postgres;Password=${POSTGRES_PASSWORD}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?Defina JWT_SIGNING_KEY en .env (ver .env.example)}
+      SeedOperator__Username: portero
+      SeedOperator__Password: ${OPERATOR_PASSWORD:?Defina OPERATOR_PASSWORD en .env (ver .env.example)}
+      Database__MigrateAndSeedOnStartup: "true"
+      Cors__AllowedOrigins__0: http://localhost:4200
+    ports:
+      # El frontend llama a http://localhost:5080 (frontend/src/environments/environment.ts).
+      - "5080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
+  tests:
+    profiles: ["tests"]
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: tests
+    environment:
+      ConnectionStrings__ParkingTests: Host=db;Port=5432;Database=domonow_parking_tests;Username=postgres;Password=${POSTGRES_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

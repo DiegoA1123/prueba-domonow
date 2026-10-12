@@ -74,4 +74,4 @@ cd frontend && npm run format     # Prettier antes de cada commit
 - Las credenciales locales NUNCA se commitean: usar `dotnet user-secrets` o variables de entorno.
 - ⚠️ **Los comandos de Claude corren en un sandbox que virtualiza `AppData`**: lo que escriba ahí (user-secrets, instalaciones globales) puede no existir para el usuario. Configurar secretos con `scripts/setup-dev-secrets.ps1` ejecutado en la **terminal del usuario** (`run_in_terminal`), nunca desde Bash/PowerShell de Claude. Verificar desde la terminal del usuario, no desde el sandbox (AI-USAGE #15).
 - PowerShell del usuario tiene ExecutionPolicy por defecto (Restricted): usar `npm.cmd` / `ng.cmd` en su terminal.
-- Docker no está instalado (requiere WSL); el `docker-compose` es opcional para la entrega.
+- **Docker Desktop 4.94** instalado por usuario en `%LOCALAPPDATA%\Programs\DockerDesktop` (motor sobre WSL2). El sandbox de Claude no ve `docker`: correr los comandos de Docker en la terminal del usuario (`run_in_terminal`). `docker compose run --rm tests` corre las 82 pruebas del backend en Linux (evita el bloqueo de Smart App Control sobre las DLL de prueba en Windows).

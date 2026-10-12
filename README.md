@@ -17,6 +17,22 @@ Solución Full Stack para la prueba técnica de OFIMA SAS: registrar el ingreso 
 - Node.js 24 LTS (recomendado vía nvm). Angular CLI no hace falta instalarlo global: los scripts de `npm` usan el del proyecto.
 - PostgreSQL 17
 
+## Opción rápida: todo con Docker
+
+Solo requiere Docker (Docker Desktop en Windows/macOS). Levanta PostgreSQL 17, la API y el frontend, sin instalar .NET, Node ni PostgreSQL:
+
+```bash
+cp .env.example .env          # Windows: copy .env.example .env
+docker compose up --build
+```
+
+- Frontend en `http://localhost:4200`; API en `http://localhost:5080`. Usuario `portero` con la contraseña `OPERATOR_PASSWORD` de `.env` (valores de ejemplo solo para uso local).
+- La API aplica las migraciones y siembra los datos al arrancar. PostgreSQL no se publica fuera de Docker, así que no choca con un PostgreSQL local en el puerto 5432; los puertos 4200 y 5080 sí deben estar libres.
+- Pruebas del backend (unitarias + integración contra el PostgreSQL del compose): `docker compose run --rm tests`.
+- Detener: `docker compose down` (agregar `-v` para borrar también los datos).
+
+Las secciones siguientes explican cómo ejecutar cada parte sin Docker.
+
 ## Configurar la base de datos
 
 1. Tener PostgreSQL 17 corriendo en `localhost:5432`.
