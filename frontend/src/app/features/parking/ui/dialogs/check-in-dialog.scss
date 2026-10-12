@@ -1,4 +1,6 @@
-.check-in {
+// Doble clase para ganarle a la regla de Material que quita el padding superior al contenido que
+// sigue al título: sin él, la etiqueta flotante del primer campo queda recortada por el scroll.
+.check-in.mat-mdc-dialog-content {
   display: grid;
   gap: 0.25rem;
   min-width: min(22rem, 80vw);
