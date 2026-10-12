@@ -1,0 +1,11 @@
+<mat-toolbar class="app-toolbar">
+  <span class="app-toolbar__brand">DomoNow · Parqueaderos</span>
+  <span class="app-toolbar__spacer"></span>
+  @if (session.username(); as username) {
+    <span class="app-toolbar__user">{{ username }}</span>
+    <button mat-button type="button" (click)="logout()">Cerrar sesión</button>
+  }
+</mat-toolbar>
+<main class="app-content">
+  <router-outlet />
+</main>

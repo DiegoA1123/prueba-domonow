@@ -1,0 +1,32 @@
+@if (rows().length === 0) {
+  <p class="active-table__empty">No hay vehículos de visitantes dentro de la propiedad.</p>
+} @else {
+  <table mat-table [dataSource]="rows()" class="active-table">
+    <ng-container matColumnDef="spotCode">
+      <th mat-header-cell *matHeaderCellDef>Parqueadero</th>
+      <td mat-cell *matCellDef="let row">{{ row.spotCode }}</td>
+    </ng-container>
+    <ng-container matColumnDef="licensePlate">
+      <th mat-header-cell *matHeaderCellDef>Placa</th>
+      <td mat-cell *matCellDef="let row">
+        <strong>{{ row.licensePlate }}</strong>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="visitorName">
+      <th mat-header-cell *matHeaderCellDef>Visitante</th>
+      <td mat-cell *matCellDef="let row">{{ row.visitorName }}</td>
+    </ng-container>
+    <ng-container matColumnDef="destinationUnit">
+      <th mat-header-cell *matHeaderCellDef>Unidad</th>
+      <td mat-cell *matCellDef="let row">{{ row.destinationUnit }}</td>
+    </ng-container>
+    <ng-container matColumnDef="checkedInAt">
+      <th mat-header-cell *matHeaderCellDef>Ingreso</th>
+      <td mat-cell *matCellDef="let row">
+        {{ row.checkedInAt | date: 'shortTime' }} · {{ row.elapsed }}
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns"></tr>
+  </table>
+}

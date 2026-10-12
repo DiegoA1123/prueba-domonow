@@ -5,7 +5,7 @@ Solución Full Stack para la prueba técnica de OFIMA SAS: registrar el ingreso 
 | Capa | Tecnología |
 |------|-----------|
 | Backend | .NET 10 · ASP.NET Core (Minimal APIs) · EF Core · PostgreSQL 17 |
-| Frontend | Angular 22 · TypeScript · Signals |
+| Frontend | Angular 22 (zoneless) · TypeScript 6 strict · Signals · Signal Forms · Angular Material 22 · RxJS |
 | Seguridad | JWT Bearer · PasswordHasher (PBKDF2) · user-secrets |
 | Pruebas | xUnit · Shouldly · WebApplicationFactory + PostgreSQL real |
 
@@ -62,7 +62,28 @@ Los errores siguen RFC 9457 (ProblemDetails) con un campo `code` estable (`Parki
 
 ## Ejecutar el frontend
 
-_Pendiente._
+Requiere la API corriendo en `http://localhost:5080` (su CORS ya permite `http://localhost:4200`).
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+Abrir `http://localhost:4200` e ingresar con el operador de prueba configurado en `SeedOperator` (usuario `portero`). En PowerShell con la política de ejecución por defecto, usar `npm.cmd` en lugar de `npm`.
+
+| Comando | Qué hace |
+|---------|----------|
+| `npm start` | Servidor de desarrollo en `http://localhost:4200` |
+| `npm test` | Pruebas unitarias y de componentes (Vitest + jsdom) |
+| `npm run lint` | angular-eslint |
+| `npm run build` | Build de producción en `frontend/dist/` |
+
+**Qué hace la pantalla:** tarjetas por parqueadero con color por estado (verde disponible, rojo ocupado con placa, visitante, unidad y tiempo transcurrido, gris fuera de servicio), filtro por estado con contadores, registro de ingreso con vista previa de la placa normalizada, salida con confirmación y la tabla de vehículos dentro. Se actualiza sola después de cada acción y cada 30 s (se pausa si la pestaña no está visible). Capturas reales en [`docs/screenshots/`](docs/screenshots/).
+
+| Tablero (filtro "Ocupados") | Placa ya dentro (error del backend) |
+|---|---|
+| ![Tablero](docs/screenshots/01-tablero-filtro-ocupados.jpg) | ![Error placa](docs/screenshots/03-ingreso-placa-ya-dentro.jpg) |
 
 ## Ejecutar las pruebas
 
@@ -78,6 +99,14 @@ dotnet test backend/DomoNow.Parking.slnx
 | `Api.IntegrationTests` | API completa contra PostgreSQL real: autenticación (401/403, token vencido o con otra firma, rate limit por IP), flujos, errores y **concurrencia** (20 ingresos simultáneos al mismo parqueadero → exactamente 1 éxito; misma placa en 2 parqueaderos a la vez → 1 éxito; 10 salidas simultáneas → 1 éxito) | 25 |
 
 Las pruebas de integración recrean la base `domonow_parking_tests` en cada corrida. No se usan SQLite ni InMemory porque no reproducen `xmin`, los índices parciales ni la concurrencia real.
+
+Frontend (`cd frontend && npm test`): **58 pruebas** (Vitest).
+
+| Área | Qué prueba |
+|------|-----------|
+| `core/http` | Traducción de ProblemDetails a mensajes en español (sin conexión, 401, 429, genérico) |
+| `core/auth` | Sesión en signals + `sessionStorage`, interceptor JWT solo hacia la API, 401 → login con aviso, página de login (Signal Forms) |
+| `features/parking` | Reglas de placa, mapeo DTO → dominio, adaptador HTTP, **store reactivo** (contadores, filtro, polling cada 30 s pausado con la pestaña oculta, timeout de 10 s si la API se cuelga, último tablero conservado si la API falla, una sola acción por parqueadero), tarjeta, diálogo de ingreso, página del tablero (cierra diálogos al salir, sin estados vacíos engañosos) |
 
 ## Decisiones de arquitectura
 
@@ -107,6 +136,14 @@ Backend (hallazgos menores de la revisión con IA, conscientemente diferidos):
 - Validar explícitamente el filtro `?status=` (hoy `?status=7` devuelve lista vacía) y exigir `parkingSpotId` en el cuerpo (hoy su ausencia da 404 en lugar de 400).
 - HTTPS/HSTS fuera de Development, o documentar la terminación TLS en el proxy; detrás de un proxy, `ForwardedHeaders` para que el rate limit por IP vea la IP real.
 - Refresh tokens y revocación; endpoint de cancelación de asignaciones; volver a poner en servicio un parqueadero.
+
+Frontend (hallazgos menores de la revisión con IA, conscientemente diferidos):
+
+- `disableClose` en los diálogos para que un doble clic en la tarjeta no cierre el diálogo recién abierto.
+- Aplicar localmente el resultado de un ingreso/salida en vez de esperar la recarga (hoy la tarjeta muestra el estado anterior durante una petición).
+- Indicador visual en "Actualizar"/"Reintentar" mientras se recarga.
+- Validar nombre y unidad sobre el texto recortado (hoy "   " pasa en el cliente y el backend responde 400, que sí se muestra).
+- Comparar el origen completo de la URL en el interceptor JWT en lugar de `startsWith`.
 
 ## Evolución de la solución
 

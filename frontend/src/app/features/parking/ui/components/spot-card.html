@@ -1,0 +1,43 @@
+<article class="spot-card__body" [attr.aria-label]="spot().code + ', ' + statusLabel()">
+  <header class="spot-card__header">
+    <span class="spot-card__code">{{ spot().code }}</span>
+    <span class="spot-card__status"
+      ><span class="spot-card__dot" aria-hidden="true"></span>{{ statusLabel() }}</span
+    >
+  </header>
+
+  @if (assignment(); as current) {
+    <dl class="spot-card__details">
+      <div>
+        <dt>Placa</dt>
+        <dd class="spot-card__plate">{{ current.licensePlate }}</dd>
+      </div>
+      <div>
+        <dt>Visitante</dt>
+        <dd>{{ current.visitorName }}</dd>
+      </div>
+      <div>
+        <dt>Unidad</dt>
+        <dd>{{ current.destinationUnit }}</dd>
+      </div>
+      <div>
+        <dt>Ingreso</dt>
+        <dd>{{ current.checkedInAt | date: 'shortTime' }} · {{ elapsed() }}</dd>
+      </div>
+    </dl>
+  }
+
+  <footer class="spot-card__actions">
+    @if (canCheckIn()) {
+      <button mat-flat-button type="button" [disabled]="busy()" (click)="checkIn.emit(spot())">
+        Registrar ingreso
+      </button>
+    } @else if (canCheckOut()) {
+      <button mat-stroked-button type="button" [disabled]="busy()" (click)="checkOut.emit(spot())">
+        Registrar salida
+      </button>
+    } @else {
+      <span class="spot-card__hint">No disponible para visitantes</span>
+    }
+  </footer>
+</article>

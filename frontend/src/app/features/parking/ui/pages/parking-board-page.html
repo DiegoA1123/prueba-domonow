@@ -1,0 +1,52 @@
+<section class="board">
+  <header class="board__header">
+    <div>
+      <h1 class="board__title">Parqueaderos de visitantes</h1>
+      @if (store.lastUpdated(); as updated) {
+        <p class="board__subtitle">
+          Actualizado a las {{ updated | date: 'mediumTime' }} · se actualiza cada 30 s
+        </p>
+      }
+    </div>
+    <button mat-stroked-button type="button" (click)="store.refresh()">Actualizar</button>
+  </header>
+
+  <app-status-filter [counts]="store.counts()" [(selected)]="store.filter" />
+
+  @if (store.isInitialLoading()) {
+    <mat-progress-bar mode="indeterminate" aria-label="Cargando parqueaderos" />
+  }
+
+  @if (store.loadError(); as error) {
+    <div class="board__error" role="alert">
+      <span>{{ error.message }}</span>
+      <button mat-button type="button" (click)="store.refresh()">Reintentar</button>
+    </div>
+  }
+
+  <div class="board__grid">
+    @for (spot of store.visibleSpots(); track spot.id) {
+      <app-spot-card
+        [spot]="spot"
+        [now]="store.now()"
+        [busy]="store.busySpotIds().has(spot.id)"
+        (checkIn)="openCheckIn($event)"
+        (checkOut)="confirmCheckOut($event)"
+      />
+    } @empty {
+      @if (store.loadState() === 'ready') {
+        <p class="board__empty">No hay parqueaderos con este estado.</p>
+      }
+    }
+  </div>
+
+  <!-- Si nunca se pudo cargar, no se afirma que "no hay vehículos dentro": no se sabe. -->
+  @if (store.loadState() === 'ready') {
+    <section class="board__active" aria-labelledby="active-vehicles-title">
+      <h2 id="active-vehicles-title" class="board__section-title">
+        Vehículos dentro ({{ store.activeAssignments().length }})
+      </h2>
+      <app-active-vehicles-table [assignments]="store.activeAssignments()" [now]="store.now()" />
+    </section>
+  }
+</section>

@@ -23,6 +23,8 @@ Enunciado completo resumido en `docs/REQUIREMENTS.md`.
 - La lógica de negocio vive en el **dominio** (entidades / value objects), no en controladores, repositorios ni componentes Angular.
 - **Pragmatismo**: la prueba penaliza la sobreingeniería. Prohibido sin justificación escrita en un ADR: MediatR, AutoMapper, repositorio genérico, microservicios, CQRS con bases separadas, event sourcing.
 
+- **Frontend reactivo en todo** (regla del usuario): estado en `signal`, derivados en `computed`, `input()/output()`, zoneless + OnPush, HTTP/polling como RxJS → signals, formularios reactivos. Detalle en `docs/CONVENTIONS.md` §3.
+
 ## 3. Reglas de negocio que el código DEBE garantizar
 
 | # | Regla | Dónde se garantiza |
@@ -57,9 +59,13 @@ dotnet run --project backend/src/DomoNow.Parking.Api --launch-profile http      
 cd backend && dotnet tool run dotnet-ef migrations add <Nombre> -p src/DomoNow.Parking.Infrastructure -s src/DomoNow.Parking.Api -o Persistence/Migrations
 cd backend && dotnet tool run dotnet-ef database update -p src/DomoNow.Parking.Infrastructure -s src/DomoNow.Parking.Api
 
-# Frontend
-cd frontend && npm start
-cd frontend && npm test
+# Frontend (verificados 2026-10-11) — en el sandbox de Claude correr con PowerShell y PATH de nvm:
+#   $env:Path = "C:\nvm4w\nodejs;" + $env:Path ; Set-Location frontend   (en Git Bash el shim de npm falla)
+cd frontend && npm start          # http://localhost:4200
+cd frontend && npm test           # Vitest, 58 tests
+cd frontend && npm run lint
+cd frontend && npm run build
+cd frontend && npm run format     # Prettier antes de cada commit
 ```
 
 ## 6. Entorno local

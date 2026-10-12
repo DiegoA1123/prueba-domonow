@@ -1,0 +1,45 @@
+<form (submit)="save($event)" novalidate>
+  <h2 mat-dialog-title>Registrar ingreso · {{ spot.code }}</h2>
+
+  <!-- Fuera de la zona con scroll: siempre visible, aunque el formulario esté desplazado. -->
+  @if (serverError(); as message) {
+    <p class="check-in__error" role="alert">{{ message }}</p>
+  }
+
+  <mat-dialog-content class="check-in">
+    <mat-form-field appearance="outline">
+      <mat-label>Placa</mat-label>
+      <input matInput [formField]="checkInForm.licensePlate" autocomplete="off" cdkFocusInitial />
+      @if (normalizedPlate(); as plate) {
+        <mat-hint>Se registrará como {{ plate }}</mat-hint>
+      }
+      @for (error of checkInForm.licensePlate().errors(); track $index) {
+        <mat-error>{{ error.message }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre del visitante</mat-label>
+      <input matInput [formField]="checkInForm.visitorName" autocomplete="off" />
+      @for (error of checkInForm.visitorName().errors(); track $index) {
+        <mat-error>{{ error.message }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Unidad que visita</mat-label>
+      <input matInput [formField]="checkInForm.destinationUnit" autocomplete="off" />
+      @for (error of checkInForm.destinationUnit().errors(); track $index) {
+        <mat-error>{{ error.message }}</mat-error>
+      }
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close [disabled]="submitting()">Cancelar</button>
+    <button mat-flat-button type="submit" [disabled]="submitting()">Registrar ingreso</button>
+  </mat-dialog-actions>
+  @if (submitting()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</form>

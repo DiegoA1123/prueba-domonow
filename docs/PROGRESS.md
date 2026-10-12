@@ -5,9 +5,9 @@
 
 ## Estado actual
 
-**Fase**: 1 — Backend implementado (rama `feat/backend`), pendiente revisión final y merge
-**Último paso**: Plan de backend ejecutado (10 tasks, TDD). Revisión final independiente hecha: 4 hallazgos importantes corregidos con TDD. **82/82 tests** (43 dominio, 14 aplicación, 25 integración contra PostgreSQL).
-**Siguiente paso**: Revisión y merge del PR #1 (https://github.com/DiegoA1123/prueba-domonow/pull/1) → Fase 2 (frontend).
+**Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
+**Último paso**: `feat/frontend` subida y PR #3 abierto (https://github.com/DiegoA1123/prueba-domonow/pull/3). 58/58 tests frontend, 82/82 backend.
+**Siguiente paso**: el usuario hace merge del PR #3 → README "Evolución de la solución" → AI-USAGE final (casos seleccionados + AI Code Review).
 
 ## Tablero
 
@@ -30,11 +30,12 @@
 | 1 | Api: endpoints, ProblemDetails, CORS, OpenAPI | ✅ |
 | 1 | Autenticación: login JWT, operadores (hash), roles, user-secrets (ADR-0004) | ✅ |
 | 1 | Test de integración de concurrencia (R6) | ✅ |
-| 1 | Revisión final de la rama + merge a main | ⏳ |
-| 2 | Frontend: proyecto Angular + estructura hexagonal | ⬜ |
-| 2 | Login + interceptor JWT + guard | ⬜ |
-| 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ⬜ |
-| 2 | Tests frontend (store, mappers) | ⬜ |
+| 1 | Revisión final de la rama + merge a main (PR #1, PR #2) | ✅ |
+| 2 | Frontend: proyecto Angular + estructura hexagonal | ✅ |
+| 2 | Login + interceptor JWT + guard | ✅ |
+| 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ✅ |
+| 2 | Tests frontend (store, mappers, componentes) — 58 | ✅ |
+| 2 | Revisión final + PR #3 (merge del usuario) | ⏳ |
 | 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ⬜ |
 | 3 | README completo + "Evolución de la solución" | ⬜ |
 | 3 | (Opcional) Desafío predicción de demanda · docker-compose | ⬜ |
@@ -58,6 +59,9 @@ Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer 
 | 2026-10-10 | R7 (regla del usuario): placa única activa; cruza agregados → handler + índice único parcial por placa → 409 | ADR-0005 · AI-USAGE #8 |
 | 2026-10-10 | Consultas sin handler: los endpoints usan el puerto `IParkingReadModel` directamente; `IUnitOfWork.CommitAsync` devuelve `Result` | ARCHITECTURE §2.2 |
 | 2026-10-10 | Mensajes de error en español, códigos en inglés; `ReturnToService` eliminado (YAGNI) | CONVENTIONS · DOMAIN |
+
+| 2026-10-11 | Frontend: Angular Material; refresco tras cada acción + polling cada 30 s (pausado con la pestaña oculta); filtro por estado, lista de vehículos dentro y detalle en tarjeta ocupada; salida con hora del servidor (sin UI de hora tardía) | Usuario |
+| 2026-10-11 | Regla del usuario: **reactividad en todo el frontend** (signals/computed, input/output, zoneless + OnPush, RxJS → signals, formularios reactivos) | CONVENTIONS §3 |
 
 ## Decisiones pendientes
 
@@ -143,3 +147,22 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Verificación**: el usuario confirmó que la API arranca en Visual Studio. `dotnet build` 0 advertencias; `dotnet test` 82/82.
 - **Nota de entorno**: ExecutionPolicy de PowerShell del usuario en Restricted → usar `npm.cmd`/`ng.cmd` o que el usuario configure `RemoteSigned` para su cuenta.
 - **Siguiente**: merge del PR de esta corrección → retomar `feat/frontend` (rebase sobre `main`) y ejecutar el plan del frontend.
+
+### 2026-10-11 — Fase 2: frontend implementado (rama `feat/frontend`)
+- **Qué**: Tasks 1–9 del plan del frontend ejecutadas con TDD: scaffold Angular 22 + Material + ESLint, modelo de errores, sesión/interceptores/guards, login con Signal Forms, dominio + adaptador HTTP, `ParkingStore` reactivo (polling 30 s pausado con pestaña oculta), componentes, diálogo de ingreso y tablero.
+- **Verificación real en el navegador**: 7 de 8 flujos OK (login, filtro, ingreso con vista previa, placa repetida, salida, sesión vencida). Flujo 8 (apagar la API) no se ejecutó porque la API en 5080 era un proceso ajeno; cubierto por test del store. Encontrado y corregido 1 bug de UX (error del diálogo fuera de la vista). Capturas en `docs/screenshots/`.
+- **Verificación**: `npm test` → **52/52**, lint limpio, build OK. Backend sin cambios (82/82).
+- **Docs**: README (ejecutar frontend, tests, capturas), ARCHITECTURE §3, CLAUDE.md §5, AI-USAGE #16–#17.
+- **Pendiente** (Task 10): revisión final independiente de la rama, push de `feat/frontend` y PR; luego README § "Evolución de la solución", "Qué mejoraría" y sección AI Code Review / casos seleccionados de AI-USAGE.
+
+### 2026-10-11 — Fase 2: revisión final independiente del frontend
+- **Qué**: Agente revisor (Opus, contexto nuevo) revisó `feat/frontend` contra plan, spec y Review Focus: 0 críticos, 3 importantes, 7 menores. Arquitectura, reactividad (CONVENTIONS §3) y manejo de errores validados.
+- **Corregidos con TDD** (`8a629d7`, `3ea2970`): diálogos que quedaban encima del login tras un 401 (`closeAll` al destruir la página); timeout de 10 s si la API se cuelga; una sola acción por parqueadero aunque el botón no se haya deshabilitado; sin "No hay vehículos dentro" cuando la primera carga falla; tests de refresco tras error y de `checkOut`.
+- **Diferidos (menores)**: README § Mejoras (frontend). AI-USAGE #18.
+- **Verificación**: `npm test` **58/58**, lint limpio, build OK.
+- **Siguiente**: paso 2 — push de `feat/frontend` y PR #3.
+
+### 2026-10-11 — Fase 2: Pull Request del frontend
+- **Qué**: `feat/frontend` subida a GitHub; PR https://github.com/DiegoA1123/prueba-domonow/pull/3 (`feat/frontend` → `main`). Tablero de estado puesto al día (fases 1 y 2).
+- **Verificación**: `npm test` 58/58 sobre el árbol subido. Sin CI configurado.
+- **Siguiente**: el usuario revisa y hace merge → README § "Evolución de la solución" → AI-USAGE final.

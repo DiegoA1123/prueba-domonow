@@ -137,33 +137,36 @@ La validación previa sola **no** basta (check-then-act race).
 
 ## 3. Frontend (`/frontend`)
 
-Mismo principio hexagonal, adaptado a Angular (standalone components, signals, control flow nativo).
+Mismo principio hexagonal, adaptado a Angular 22: standalone components, **zoneless**, signals, control flow nativo y **Signal Forms**. Reactividad en todo (CONVENTIONS §3).
 
 ```
 frontend/src/app/
+├── app.ts · app.routes.ts · app.config.ts   # shell (toolbar), rutas con guards, providers (zoneless, HTTP, es-CO)
 ├── core/                        # Transversal, se carga una vez
-│   ├── auth/                    # Sesión (token en memoria + sessionStorage), auth interceptor,
-│   │                            #   authGuard, página de login (ADR-0004)
-│   ├── config/                  # API base URL (environment)
-│   ├── http/                    # Interceptor de errores → ProblemDetails tipado
-│   └── notifications/           # Servicio de toasts/mensajes
+│   ├── auth/                    # session.store (signals + sessionStorage vía effect), auth-api,
+│   │                            #   auth.interceptor (JWT solo hacia la API), auth.guard, login-page (ADR-0004)
+│   ├── config/api-base-url.ts   # API base URL (environment)
+│   ├── http/                    # api-error (ProblemDetails → ApiError en español) + api-error.interceptor (401 → login)
+│   └── notifications/notifier.ts# Avisos (MatSnackBar)
 ├── features/
 │   └── parking/
-│       ├── domain/              # Modelos TS con el MISMO lenguaje ubicuo (ParkingSpot, ParkingAssignment,
-│       │                        #   ParkingSpotStatus…) + reglas de presentación puras (p. ej. canCheckIn)
-│       │   └── parking.repository.ts   # PUERTO: abstract class ParkingRepository
-│       ├── application/         # parking.store.ts: estado con signals + casos de uso
-│       ├── infrastructure/      # ADAPTADOR: parking-http.repository.ts + DTOs + mappers
-│       └── ui/                  # pages/ (contenedor) + components/ (presentacionales)
-│           ├── pages/parking-board/
-│           └── components/ spot-card/ · check-in-form/ · status-legend/
-└── shared/                      # UI y utilidades reutilizables sin dominio
+│       ├── domain/              # parking.models.ts (MISMO lenguaje ubicuo), license-plate.ts (espejo de UX del VO),
+│       │                        #   parking.repository.ts = PUERTO (abstract class)
+│       ├── application/         # parking.store.ts: estado en signals, computed (contadores, filtro),
+│       │                        #   polling RxJS visible-aware → signals, checkIn/checkOut
+│       ├── infrastructure/      # ADAPTADOR: parking-http.repository.ts + parking-api.dto.ts + parking.mapper.ts
+│       └── ui/
+│           ├── pages/parking-board-page.*       # contenedor: provee ParkingStore, abre diálogos
+│           ├── dialogs/check-in-dialog.*        # Signal Forms + vista previa reactiva de la placa
+│           └── components/ spot-card · status-filter · active-vehicles-table   # presentacionales
+└── shared/                      # format-elapsed ("hace 2 h 5 min"), confirm-dialog
 ```
 
-- El puerto se enlaza en DI: `{ provide: ParkingRepository, useClass: ParkingHttpRepository }` → en tests se sustituye por un fake.
-- **Estado**: un store por feature con `signal`/`computed`; los componentes presentacionales usan `input()`/`output()` y `ChangeDetectionStrategy.OnPush`.
-- **Errores**: el interceptor convierte la respuesta en `ApiError` tipado; el store expone `error()`; la UI muestra el `detail` del ProblemDetails.
-- **Smart vs dumb**: solo la página habla con el store; los componentes no inyectan servicios de datos.
+- **Puerto ↔ adaptador** se enlazan en los `providers` de la ruta del tablero: `{ provide: ParkingRepository, useClass: ParkingHttpRepository }` → en tests se sustituye por un fake.
+- **Estado**: `ParkingStore` se provee a nivel de página (vive y hace polling solo mientras la página existe). Polling = `fromEvent(visibilitychange) → switchMap(timer(0, 30 s))` + refrescos manuales, todo con `switchMap` (una respuesta vieja nunca pisa una nueva) y `takeUntilDestroyed`.
+- **Errores**: el interceptor convierte la respuesta en `ApiError`; un 401 cierra la sesión y lleva a `/login?reason=expired`. Si una recarga falla, el store conserva el último tablero y expone `loadError` (banner + "Reintentar").
+- **Concurrencia en la UI**: `busySpotIds` deshabilita la acción de ese parqueadero mientras hay una petición en vuelo; tras éxito o error (p. ej. 409) se refresca el tablero.
+- **Smart vs dumb**: solo la página y el diálogo usan el store; tarjeta, filtro y tabla son presentacionales (`input()`/`output()`/`model()`, OnPush).
 
 ## 4. Lo que deliberadamente NO hacemos (y por qué)
 
