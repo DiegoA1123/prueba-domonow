@@ -10,7 +10,7 @@ Herramienta principal: **Claude Code** (modelo Claude Opus 5.5) con plugins `sup
 
 ## 1. Casos seleccionados
 
-> Cinco casos elegidos del registro continuo (§3) para mostrar las distintas decisiones: una propuesta rechazada, una cuestionada antes de aceptarla, dos errores de la IA detectados al verificar y una propuesta modificada por el ingeniero.
+> Cinco casos elegidos del registro continuo (§3) para mostrar las distintas decisiones: una propuesta rechazada, una cuestionada antes de aceptarla, dos errores de la IA detectados al verificar y una mejora que propuso el ingeniero tras usar la app, y que la IA no había visto. La sección "Evolución de la solución" del README, en la que el ingeniero eligió entre las opciones que propuso la IA, queda en el registro #19.
 
 ### Caso 1 — La IA propuso dejar la autenticación fuera de alcance (registro #3)
 - **Problema**: el enunciado pide que solo un usuario autorizado registre ingresos y salidas. Había que decidir cuánto tiempo dedicarle dentro de las 6 horas.
@@ -44,13 +44,13 @@ Herramienta principal: **Claude Code** (modelo Claude Opus 5.5) con plugins `sup
 - **Decisión del ingeniero**: **Rechazada la hipótesis; corregida la causa raíz**.
 - **Justificación**: en lugar de seguir probando arreglos, se agregó un diagnóstico temporal que imprimió la ruta del archivo de secretos: `Exists=False` desde Visual Studio. La causa real era que la terminal de la IA corre en un entorno aislado que virtualiza `AppData`, así que los secretos existían para la IA y no para el usuario. Se revirtió el cambio especulativo, se creó `scripts/setup-dev-secrets.ps1` para correr en la terminal del usuario y la lección quedó en CLAUDE.md: verificar en el entorno del usuario y no corregir sin evidencia de la causa.
 
-### Caso 5 — Evolución a 5.000 propiedades: la IA propone opciones, el ingeniero decide (registro #19)
-- **Problema**: responder la pregunta de arquitectura del enunciado (§15) con criterio propio, no con una lista genérica.
-- **Herramienta**: Claude Code (Opus).
-- **Instrucción**: primero, redactar la sección. Después, "dame más posibilidades para yo analizar cuáles metemos o cuáles modificamos", con tres puntos fijados por el ingeniero: envío directo a las pantallas, multi-tenancy y microservicios solo a futuro.
-- **Resultado (propuesta de la IA)**: un primer borrador con caché del tablero en Redis, y luego un menú de 25 opciones (alternativas de push, modelos de tenancy, temas nuevos de arquitectura, cumplimiento, producto y cambios al borrador).
-- **Decisión del ingeniero**: **Modificada**. Eligió SignalR, multi-tenancy híbrido, microservicios a futuro con criterio y orden de separación, analítica fuera de la base principal y portería sin conexión. **Eliminó la caché distribuida del tablero** y descartó el resto.
-- **Justificación**: la cuenta del borrador mostró que la carga dominante no son las escrituras (~6/s) sino el polling (~330 peticiones/s con 10.000 pantallas). Con push, la pantalla ya tiene el estado; una caché del tablero sería una segunda copia de "qué está libre" que, si se invalida mal, muestra libre un parqueadero ocupado. La IA agregó dos detalles necesarios para lo elegido (recargar el tablero al reconectar y un id por registro hecho sin conexión), y se los señaló al ingeniero para que decidiera si se quedaban.
+### Caso 5 — Lo que la IA no vio: usabilidad para el portero (registro #20)
+- **Problema**: el frontend pasaba 58 tests, la prueba en el navegador y dos revisiones independientes, pero al usarlo como lo usaría un portero resultaba poco práctico.
+- **Herramienta**: Claude Code (Opus), para implementar las mejoras que identificó el ingeniero.
+- **Instrucción**: "a nivel de experiencia de usuario la app no es tan intuitiva… toca buscar cada parqueadero, no hay filtrado de búsqueda, el botón de actualizar no debería estar, la unidad a la que visita debe llegar implícita de acuerdo a cuál pertenece el portero".
+- **Resultado (propuesta de la IA)**: la IA **no había detectado** ninguno de los tres problemas: ni al implementar ni en sus revisiones, que se centraron en corrección (concurrencia, errores, seguridad) y no en el trabajo real en portería. Ante la "unidad implícita", señaló una ambigüedad: el portero pertenece a la propiedad, no al apartamento. Pidió aclararlo antes de cambiar el modelo.
+- **Decisión del ingeniero**: **Propuesta del ingeniero; implementada con una parte modificada**. Búsqueda por parqueadero, placa, visitante o apartamento combinada con el filtro por estado, y sin botón "Actualizar". Sobre la unidad, el ingeniero aclaró que en Colombia "unidad" se entiende como el conjunto residencial. Como el enunciado usa *unidad = apartamento* ("Unidad o apartamento que visita") y la propiedad ya es implícita, se cambiaron solo las etiquetas de pantalla a "Apto/casa" y se mantuvo `DestinationUnit` en el dominio y la API.
+- **Justificación**: el botón sobraba porque el tablero ya se refresca después de cada acción y cada 30 s. "Reintentar" se conservó para cuando la carga falla, con un test que lo protege. La búsqueda tolera cómo escribe el portero (`abc-12`, `maria` para "María"). Se hizo con TDD (11 tests nuevos, 69/69), y el ingeniero lo verificó en el navegador. Lección: los tests y las revisiones de código confirman que el sistema hace lo especificado, no que sea cómodo de usar. Eso lo da usar el producto en el contexto real.
 
 ---
 

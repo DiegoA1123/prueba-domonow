@@ -5,9 +5,9 @@
 
 ## Estado actual
 
-**Fase**: 3 — Entrega. Backend, frontend y documentación final en `main` (PR #1–#4); mejoras de UX en PR #5.
-**Último paso**: PR #4 (evolución + AI-USAGE final) fusionado. Mejoras de UX detectadas por el ingeniero (búsqueda, sin botón "Actualizar", "Apto/casa") en `feat/frontend-ux`, PR #5. 69/69 tests frontend.
-**Siguiente paso**: merge del PR #5 (usuario) → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
+**Fase**: 3 — Entrega. Backend, frontend, mejoras de UX y documentación final en `main` (PR #1–#5).
+**Último paso**: PR #5 (mejoras de UX) fusionado. AI-USAGE: el caso de usabilidad (#20) reemplaza al caso 5 seleccionado; `angular.json` sin pregunta de analytics. Rama `docs/ai-usage-operator-case`.
+**Siguiente paso**: merge del PR #6 (usuario) → revisión final de la entrega desde cero → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
 
 ## Tablero
 
@@ -35,7 +35,7 @@
 | 2 | Login + interceptor JWT + guard | ✅ |
 | 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ✅ |
 | 2 | Tests frontend (store, mappers, componentes) — 69 | ✅ |
-| 2 | Mejoras de UX detectadas por el ingeniero (PR #5) | ⏳ |
+| 2 | Mejoras de UX detectadas por el ingeniero (PR #5) | ✅ |
 | 2 | Revisión final + PR #3 (merge del usuario) | ✅ |
 | 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ✅ |
 | 3 | README completo + "Evolución de la solución" | ✅ |
@@ -186,3 +186,8 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Decisión**: el ingeniero propuso que la "unidad" llegara implícita según el portero. Aclarado el lenguaje: el enunciado llama **propiedad** al conjunto y **unidad** al apartamento ("Unidad o apartamento que visita"). La propiedad ya es implícita (una sola; con multi-tenancy saldría del token, README § Evolución). Se cambian solo los textos de pantalla y se conserva `DestinationUnit` en dominio y API.
 - **Verificación**: TDD (11 tests nuevos; los de UI vistos en rojo), `npm test` 69/69, lint limpio, build OK. Probado en el navegador por el ingeniero (la IA no pudo iniciar sesión: la lectura de la contraseña de prueba quedó bloqueada por permisos).
 - **Siguiente**: merge del PR #5.
+
+### 2026-10-11 — Fase 3: caso de usabilidad en AI-USAGE y `angular.json` (rama `docs/ai-usage-operator-case`)
+- **Qué**: el registro #20 (mejoras de UX detectadas por el ingeniero) reemplaza al caso 5 de §1 Casos seleccionados, decisión del ingeniero. El enunciado pide 3–5 casos y el ingeniero eligió no pasarse; la sección de evolución sigue en el registro #19. `frontend/angular.json`: `"analytics": false` (cambio hecho por el ingeniero en otra sesión, ajustado al formato del archivo), para que el evaluador no reciba la pregunta de analytics de Angular CLI.
+- **Verificación**: `npm test` 69/69, `npm run build` OK.
+- **Siguiente**: merge del PR (usuario) → revisión final de la entrega desde cero.
