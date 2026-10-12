@@ -10,40 +10,73 @@ Herramienta principal: **Claude Code** (modelo Claude Opus 5.5) con plugins `sup
 
 ## 1. Casos seleccionados
 
-> Se completan al final a partir del registro continuo.
+> Cinco casos elegidos del registro continuo (§3) para mostrar las distintas decisiones: una propuesta rechazada, una cuestionada antes de aceptarla, dos errores de la IA detectados al verificar y una propuesta modificada por el ingeniero.
 
-### Caso 1 — _título_
-- **Problema**:
-- **Herramienta**:
-- **Instrucción**:
-- **Resultado (propuesta de la IA)**:
-- **Decisión del ingeniero**: Aceptada / Modificada / Rechazada
-- **Justificación**:
+### Caso 1 — La IA propuso dejar la autenticación fuera de alcance (registro #3)
+- **Problema**: el enunciado pide que solo un usuario autorizado registre ingresos y salidas. Había que decidir cuánto tiempo dedicarle dentro de las 6 horas.
+- **Herramienta**: Claude Code (Opus), durante las decisiones de diseño previas al código.
+- **Instrucción**: definir el alcance y las decisiones abiertas antes de escribir el plan del backend.
+- **Resultado (propuesta de la IA)**: dejar la autenticación fuera de alcance, documentarla como supuesto e invertir ese tiempo en el dominio y la concurrencia.
+- **Decisión del ingeniero**: **Rechazada**.
+- **Justificación**: el enunciado lo pide explícitamente y la rúbrica evalúa seguridad. Se implementó JWT con un operador de prueba, contraseña con hash (PBKDF2), rol `Operator` en las escrituras, rate limit del login y tests de 401/403 (ADR-0004). Fue una propuesta razonable para ahorrar tiempo, pero contradecía un requisito.
+
+### Caso 2 — ¿Bloqueo pesimista o concurrencia optimista? (registro #10)
+- **Problema**: el requisito central es que dos porteros no asignen el mismo parqueadero a la vez (R6). La IA había elegido concurrencia optimista.
+- **Herramienta**: Claude Code (Opus), en conversación antes de implementar.
+- **Instrucción**: "Para la concurrencia, ¿no tenemos algo como el lock for update?"
+- **Resultado (propuesta de la IA)**: comparó `SELECT … FOR UPDATE` con la versión del agregado (`xmin`). Ambos garantizan R6, pero el pesimista exige una transacción explícita en el caso de uso, retiene bloqueos y **no** cubre R7 (la misma placa en dos parqueaderos distintos). Recomendó mantener el optimista más índices únicos parciales y reservar `FOR UPDATE SKIP LOCKED` para una futura asignación automática del primer libre.
+- **Decisión del ingeniero**: **Aceptada después de cuestionarla**.
+- **Justificación**: la contención es por parqueadero y es baja, y los índices parciales hacen que la base sea el árbitro final aunque haya varias instancias de la API. Se comprobó con tests de integración contra PostgreSQL real: 20 ingresos simultáneos al mismo parqueadero dan exactamente 1 éxito, y la misma placa en 2 parqueaderos a la vez da 1 éxito (ADR-0002). La alternativa pesimista quedó en README § Evolución para el escenario en que sí aplica.
+
+### Caso 3 — Error de la IA: EF Core hacía `UPDATE` en lugar de `INSERT` (registro #11)
+- **Problema**: al registrar un ingreso, la API respondía 409 "modificado por otro operador" sobre un parqueadero libre.
+- **Herramienta**: Claude Code, que generó la capa de persistencia. Se detectó en la prueba de humo contra PostgreSQL.
+- **Instrucción**: ejecutar el plan del backend y verificar los endpoints contra la base real.
+- **Resultado (propuesta de la IA)**: configuración de EF Core sin indicar que los Id los genera el dominio. Los tests unitarios con repositorio en memoria pasaban.
+- **Decisión del ingeniero**: **Corregida**.
+- **Justificación**: el log SQL mostró `UPDATE parking_assignments` en vez de `INSERT`: EF asume que una clave Guid con valor ya existe en la base. Se corrigió con `ValueGeneratedNever()` y tests de integración que fallaron antes (7 en rojo) y pasaron después. Esto confirmó la decisión de probar contra PostgreSQL real y no con InMemory/SQLite (registro #6): un fake no detecta errores de mapeo.
+
+### Caso 4 — Error de la IA: hipótesis equivocada sobre los user-secrets (registro #15)
+- **Problema**: la API fallaba en Visual Studio con "Falta la cadena de conexión", mientras que desde la terminal de la IA funcionaba.
+- **Herramienta**: Claude Code. El ingeniero pegó el error y la pila de llamadas.
+- **Instrucción**: diagnosticar por qué la API no arrancaba con F5.
+- **Resultado (propuesta de la IA)**: primero atribuyó el fallo a cómo ASP.NET localiza el ensamblado de user-secrets y propuso `AddUserSecrets<Program>()`. No lo resolvió.
+- **Decisión del ingeniero**: **Rechazada la hipótesis; corregida la causa raíz**.
+- **Justificación**: en lugar de seguir probando arreglos, se agregó un diagnóstico temporal que imprimió la ruta del archivo de secretos: `Exists=False` desde Visual Studio. La causa real era que la terminal de la IA corre en un entorno aislado que virtualiza `AppData`, así que los secretos existían para la IA y no para el usuario. Se revirtió el cambio especulativo, se creó `scripts/setup-dev-secrets.ps1` para correr en la terminal del usuario y la lección quedó en CLAUDE.md: verificar en el entorno del usuario y no corregir sin evidencia de la causa.
+
+### Caso 5 — Evolución a 5.000 propiedades: la IA propone opciones, el ingeniero decide (registro #19)
+- **Problema**: responder la pregunta de arquitectura del enunciado (§15) con criterio propio, no con una lista genérica.
+- **Herramienta**: Claude Code (Opus).
+- **Instrucción**: primero, redactar la sección. Después, "dame más posibilidades para yo analizar cuáles metemos o cuáles modificamos", con tres puntos fijados por el ingeniero: envío directo a las pantallas, multi-tenancy y microservicios solo a futuro.
+- **Resultado (propuesta de la IA)**: un primer borrador con caché del tablero en Redis, y luego un menú de 25 opciones (alternativas de push, modelos de tenancy, temas nuevos de arquitectura, cumplimiento, producto y cambios al borrador).
+- **Decisión del ingeniero**: **Modificada**. Eligió SignalR, multi-tenancy híbrido, microservicios a futuro con criterio y orden de separación, analítica fuera de la base principal y portería sin conexión. **Eliminó la caché distribuida del tablero** y descartó el resto.
+- **Justificación**: la cuenta del borrador mostró que la carga dominante no son las escrituras (~6/s) sino el polling (~330 peticiones/s con 10.000 pantallas). Con push, la pantalla ya tiene el estado; una caché del tablero sería una segunda copia de "qué está libre" que, si se invalida mal, muestra libre un parqueadero ocupado. La IA agregó dos detalles necesarios para lo elegido (recargar el tablero al reconectar y un id por registro hecho sin conexión), y se los señaló al ingeniero para que decidiera si se quedaban.
 
 ---
 
 ## 2. AI Code Review
 
-> Se ejecuta al terminar la solución (agentes `pr-review-toolkit` + `/code-review` + `/security-review`).
-> Instrucción: buscar problemas de arquitectura, bugs, concurrencia, vulnerabilidades, rendimiento, complejidad innecesaria y pruebas ausentes.
+> Se ejecutó dos veces, al final del backend y al final del frontend, con un **agente revisor independiente** (contexto nuevo, modelo Opus, plantilla `code-reviewer` de superpowers). Recibió el diff completo de la rama, el plan, la especificación, la lista de riesgos no cubiertos por los tests (Review Focus) y las decisiones tomadas durante la ejecución.
+> Instrucción: buscar problemas de arquitectura, bugs, concurrencia, vulnerabilidades, rendimiento, complejidad innecesaria y pruebas ausentes, clasificados como críticos, importantes o menores.
+> Resultado: backend 0 críticos, 4 importantes y 4 menores; frontend 0 críticos, 3 importantes y 7 menores. Cada hallazgo se reevaluó por su efecto real sobre el portero, no por la etiqueta del revisor. Se muestran tres representativos.
 
-### Hallazgo 1
-- **Hallazgo**:
-- **¿De acuerdo?**: Sí / No / Parcialmente
-- **Acción tomada**:
-- **Justificación técnica**:
+### Hallazgo 1 — El rate limit del login era global (backend)
+- **Hallazgo**: el límite de 10 intentos por minuto se compartía entre todos los clientes. Cualquiera que fallara 10 veces bloqueaba el login de **todos** los porteros durante un minuto: una denegación de servicio trivial.
+- **¿De acuerdo?**: **Sí**.
+- **Acción tomada**: se particionó el límite por IP del cliente (`RateLimitPartition.GetFixedWindowLimiter` con `RemoteIpAddress`). Test `LoginRateLimit_IsPerClientIp_SoOneClientCannotLockOutOthers`, verificado en rojo contra el código anterior (commit `9dfccdf`).
+- **Justificación técnica**: un control de seguridad que permite bloquear a los usuarios legítimos es peor que no tenerlo. La limitación que queda está documentada: detrás de un proxy, todas las peticiones llegan con la misma IP, así que hace falta `ForwardedHeaders` o mover el límite al API Gateway (README § Mejoras y § Evolución).
 
-### Hallazgo 2
-- **Hallazgo**:
-- **¿De acuerdo?**:
-- **Acción tomada**:
-- **Justificación técnica**:
+### Hallazgo 2 — Los diálogos quedaban encima del login tras un 401 (frontend)
+- **Hallazgo**: si el token vencía con el diálogo de ingreso abierto, el interceptor redirigía a `/login`, pero `MatDialog` no cierra sus diálogos al navegar. El portero veía el formulario del parqueadero tapando la pantalla de inicio de sesión.
+- **¿De acuerdo?**: **Sí**.
+- **Acción tomada**: la página del tablero cierra sus diálogos al destruirse (`DestroyRef.onDestroy(() => dialog.closeAll())`). Test `closes its dialogs when the page is destroyed (e.g. a 401 sends the user to login)`, verificado en rojo contra la página anterior (commit `3ea2970`).
+- **Justificación técnica**: es exactamente el flujo de sesión vencida que se probó en el navegador, y los tests unitarios del interceptor no lo cubrían porque el defecto está en la interacción entre la navegación y los diálogos. Se corrigió donde nace (la página que abre los diálogos), no en el interceptor, que no debe conocer la UI.
 
-### Hallazgo 3
-- **Hallazgo**:
-- **¿De acuerdo?**:
-- **Acción tomada**:
-- **Justificación técnica**:
+### Hallazgo 3 — Dos acciones simultáneas sobre el mismo parqueadero (frontend)
+- **Hallazgo**: el revisor lo clasificó como **menor**. La única protección contra un doble clic era que el botón de la tarjeta se deshabilitara a tiempo; el store aceptaba dos acciones sobre el mismo parqueadero si llegaban seguidas.
+- **¿De acuerdo?**: **Parcialmente**: de acuerdo con el hallazgo, no con su severidad.
+- **Acción tomada**: se subió a **importante** y se corrigió. El store rechaza una segunda acción sobre un parqueadero mientras la primera sigue en curso. Las acciones se pasaron a funciones que solo se ejecutan si se aceptan: el primer intento del test falló porque la petición se creaba antes de verificar si el parqueadero estaba ocupado. Test `ignores a second action on the same spot while the first is still in flight` (commit `8a629d7`).
+- **Justificación técnica**: la doble acción estaba en la lista de riesgos que el propio plan pedía revisar. Aunque el backend responde 409 a la segunda petición (R6), el portero vería un error confuso después de una operación exitosa. La garantía de una acción por parqueadero se puso en el store y no solo en un botón, que es un detalle visual.
 
 ---
 
@@ -71,3 +104,4 @@ Herramienta principal: **Claude Code** (modelo Claude Opus 5.5) con plugins `sup
 | 16 | 2026-10-11 | Formularios reactivos en Angular 22 (regla del ingeniero: reactividad en todo) | "Recuerda siempre implementar reactividad en todo el front" | La IA verificó en el código instalado que Signal Forms es API pública estable desde Angular 22.0 y que Material 22 lo integra (`FORM_FIELD`), en lugar de asumirlo; propuso Signal Forms + store con signals/computed + polling RxJS → signals | **Aceptada** | Se confirmó con tests reales (login y diálogo) antes de construir el resto; la regla quedó en CONVENTIONS §3 |
 | 17 | 2026-10-11 | Diálogo de ingreso: mensaje de error del backend | Verificación real en el navegador (código generado por la IA) | El mensaje de error quedaba dentro del contenido con scroll; un primer arreglo de la IA (moverlo arriba del formulario) **tampoco funcionó** porque el contenido seguía desplazado | **Corregida** | Detectado al usar la app en una ventana baja. Solución declarativa: el mensaje va fuera de la zona con scroll; test que falló contra la plantilla anterior y pasa con la nueva |
 | 18 | 2026-10-11 | Revisión final del frontend antes del PR | Agente revisor independiente (contexto nuevo, modelo Opus) con plan, spec, Review Focus y decisiones de la ejecución | 0 críticos, 3 importantes (diálogos encima del login tras un 401; sin timeout si la API se cuelga; faltaban tests de flujos clave) y 7 menores | **Aceptada con reclasificación** | Se reevaluó por efecto real: 2 menores se subieron a importantes (doble acción por parqueadero, que es un punto explícito del Review Focus; y "No hay vehículos dentro" cuando la carga falla, que el portero podría creer). Los 5 importantes se corrigieron con TDD; cada test nuevo se verificó en rojo contra el código anterior. 5 menores quedan en README § Mejoras. Candidato para la sección "AI Code Review" |
+| 19 | 2026-10-11 | README § "Evolución de la solución" (5.000 propiedades) | "Sigamos con el paso 3" y luego "dame más posibilidades para yo analizar cuáles metemos o cuáles modificamos" (fijos: push a pantallas, multi-tenancy, microservicios a futuro) | Borrador con la cuenta de carga (~6 escrituras/s vs ~330 lecturas/s por polling) y caché del tablero en Redis; después, menú de 25 opciones con una recomendación | **Modificada** | El ingeniero eligió SignalR, tenancy híbrido, microservicios a futuro con orden de separación, analítica vía CDC y portería sin conexión, y **eliminó la caché del tablero**: con push no aporta y una copia mal invalidada mostraría libre un parqueadero ocupado. La IA señaló los dos detalles que agregó por su cuenta (recarga al reconectar, id por registro sin conexión) para que él decidiera |
