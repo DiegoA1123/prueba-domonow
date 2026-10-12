@@ -5,9 +5,9 @@
 
 ## Estado actual
 
-**Fase**: 3 — Entrega. Backend, frontend, mejoras de UX y documentación final en `main` (PR #1–#5).
-**Último paso**: PR #7 (revisión final) fusionado. Corregidos los dos detalles visuales de la revisión en `fix/board-visual-polish`.
-**Siguiente paso**: merge del PR de `fix/board-visual-polish` (usuario) → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
+**Fase**: 3 — Entrega. Backend, frontend, mejoras de UX, revisión final y documentación en `main` (PR #1–#8).
+**Último paso**: PR #8 (detalles visuales) fusionado; ramas fusionadas borradas. Desafío adicional de predicción de demanda redactado en `docs/PREDICCION-DEMANDA.md` (rama `docs/demand-forecast`).
+**Siguiente paso**: merge del PR de `docs/demand-forecast` (usuario) → dar acceso al evaluador (repo público o colaborador; acción del usuario). Entrega lista.
 
 ## Tablero
 
@@ -39,7 +39,8 @@
 | 2 | Revisión final + PR #3 (merge del usuario) | ✅ |
 | 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ✅ |
 | 3 | README completo + "Evolución de la solución" | ✅ |
-| 3 | (Opcional) Desafío predicción de demanda · docker-compose | ⬜ |
+| 3 | (Opcional) Desafío predicción de demanda | ✅ |
+| 3 | (Opcional) docker-compose | ⬜ sin decidir (Docker no está instalado: no se podría verificar) |
 
 Leyenda: ✅ hecho · 🔄 en curso · ⏳ pendiente inmediato · ⬜ por hacer · ❌ descartado
 
@@ -204,3 +205,10 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Tarjetas estiradas**: `align-items: start` en la grilla del tablero; una tarjeta disponible ya no toma la altura de una ocupada de la misma fila. Verificado en el navegador con un ingreso de prueba (retirado después).
 - **Sin test automatizado**: son defectos de layout que jsdom no calcula; la verificación fue visual y por estilos computados en el navegador.
 - **Verificación**: `npm test` 69/69, lint limpio, build OK.
+
+### 2026-10-12 — Fase 3: desafío adicional de predicción de demanda (rama `docs/demand-forecast`)
+- **Qué**: `docs/PREDICCION-DEMANDA.md` (~1 página, unas 650 palabras) con los 8 puntos del §16: datos, variables, algoritmo, entrenamiento, medición, integración .NET/Angular, producción y degradación. Enlazado desde el README (sección nueva antes de "Uso de IA").
+- **Decisiones del ingeniero**: documento aparte; entrenamiento en Python + exportación ONNX (predicción por lotes, la API solo lee `demand_forecasts`); incluir el evento "sin cupo" (la ocupación topada oculta la demanda real) y las reservas de zonas comunes como señal. AI-USAGE #21.
+- **Aportes del ingeniero tras revisar**: vehículos que pernoctan o llevan días dentro (reducen la capacidad del día siguiente), detalle de los eventos en salones sociales (apartamento, horario, invitados) y promedio de eventos por semana. AI-USAGE #22.
+- **Verificación**: documentación únicamente; enlaces del README revisados.
+- **Siguiente**: merge del PR → acceso del evaluador.

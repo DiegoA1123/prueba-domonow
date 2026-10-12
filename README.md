@@ -169,6 +169,10 @@ Frontend (hallazgos menores de la revisión con IA, conscientemente diferidos):
 
 **Orden en que lo haría:** 1) multi-tenancy y auditoría (cambian el esquema, mejor antes que después); 2) observabilidad; 3) push con SignalR en lugar de polling; 4) outbox y eventos, que también alimentan el push; 5) modo sin conexión en portería; 6) analítica fuera de la base principal y particionado cuando las métricas lo pidan; 7) separar servicios cuando aparezca el primer motivo real.
 
+## Desafío adicional: predicción de demanda
+
+Diseño (sin implementación) en [`docs/PREDICCION-DEMANDA.md`](docs/PREDICCION-DEMANDA.md): ocupación por propiedad y franja horaria con LightGBM entrenado en Python y exportado a ONNX, predicción por lotes que .NET expone y Angular muestra como mapa de calor. Señales propias del dominio: los ingresos rechazados "sin cupo" (la ocupación topada oculta la demanda real en los picos), los vehículos que pernoctan o llevan días dentro (reducen la capacidad del día siguiente) y los eventos en salones sociales de DomoNow, con sus invitados y el promedio de eventos por semana de la propiedad.
+
 ## Uso de IA
 
 Ver [`AI-USAGE.md`](AI-USAGE.md).
