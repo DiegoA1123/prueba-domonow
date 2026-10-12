@@ -5,9 +5,9 @@
 
 ## Estado actual
 
-**Fase**: 2 — Frontend (rama `feat/frontend`). Backend en `main` (PR #1 y fix de user-secrets PR #2 integrados)
-**Último paso**: README § "Evolución de la solución" y AI-USAGE final (5 casos + AI Code Review con 3 hallazgos) redactados en `docs/final-deliverables` (sin push).
-**Siguiente paso**: revisión del usuario → quitar el aviso "En construcción" del README → PR de `docs/final-deliverables` → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
+**Fase**: 3 — Entrega. Backend, frontend y documentación final en `main` (PR #1–#4); mejoras de UX en PR #5.
+**Último paso**: PR #4 (evolución + AI-USAGE final) fusionado. Mejoras de UX detectadas por el ingeniero (búsqueda, sin botón "Actualizar", "Apto/casa") en `feat/frontend-ux`, PR #5. 69/69 tests frontend.
+**Siguiente paso**: merge del PR #5 (usuario) → (opcional) predicción de demanda / docker-compose → hacer público el repo o invitar al evaluador (acción del usuario).
 
 ## Tablero
 
@@ -34,7 +34,8 @@
 | 2 | Frontend: proyecto Angular + estructura hexagonal | ✅ |
 | 2 | Login + interceptor JWT + guard | ✅ |
 | 2 | Pantalla "Parqueaderos de visitantes" + check-in + checkout + errores | ✅ |
-| 2 | Tests frontend (store, mappers, componentes) — 58 | ✅ |
+| 2 | Tests frontend (store, mappers, componentes) — 69 | ✅ |
+| 2 | Mejoras de UX detectadas por el ingeniero (PR #5) | ⏳ |
 | 2 | Revisión final + PR #3 (merge del usuario) | ✅ |
 | 3 | AI Code Review + 3 hallazgos en AI-USAGE.md | ✅ |
 | 3 | README completo + "Evolución de la solución" | ✅ |
@@ -178,3 +179,10 @@ Movidos y mantenidos en `README.md` § Supuestos (fuente única).
 - **Qué**: §1 Casos seleccionados con 5 casos del registro (#3 rechazada, #10 cuestionada y aceptada, #11 y #15 errores de la IA corregidos, #19 modificada por el ingeniero). §2 AI Code Review con 3 hallazgos de las revisiones independientes (#14 y #18): rate limit global (Sí), diálogos sobre el login tras 401 (Sí), doble acción por parqueadero (Parcialmente: severidad subida). Registro #19 añadido. Se corrigió la nota de §2, que nombraba herramientas que no se usaron.
 - **Verificación**: commits, nombres de tests y cifras citados comprobados contra `git log` y el código.
 - **Siguiente**: revisión del usuario → PR.
+
+### 2026-10-11 — Fase 2: mejoras de UX detectadas por el ingeniero (rama `feat/frontend-ux`)
+- **Origen**: el ingeniero usó la app y encontró problemas que ni la IA ni las dos revisiones independientes habían señalado: había que recorrer las tarjetas para encontrar un vehículo, el botón "Actualizar" sobraba con el refresco automático y "Unidad" confunde en Colombia, donde se entiende como el conjunto residencial.
+- **Qué**: búsqueda por código, placa (sin importar guiones o espacios), visitante (sin mayúsculas ni tildes) o apartamento, combinada con el filtro por estado (`domain/spot-search.ts` + `computed` del store + `spot-search-field`); se quita "Actualizar" y se mantiene "Reintentar" en error; etiquetas "Apto/casa" y "Apartamento o casa que visita" con ejemplo.
+- **Decisión**: el ingeniero propuso que la "unidad" llegara implícita según el portero. Aclarado el lenguaje: el enunciado llama **propiedad** al conjunto y **unidad** al apartamento ("Unidad o apartamento que visita"). La propiedad ya es implícita (una sola; con multi-tenancy saldría del token, README § Evolución). Se cambian solo los textos de pantalla y se conserva `DestinationUnit` en dominio y API.
+- **Verificación**: TDD (11 tests nuevos; los de UI vistos en rojo), `npm test` 69/69, lint limpio, build OK. Probado en el navegador por el ingeniero (la IA no pudo iniciar sesión: la lectura de la contraseña de prueba quedó bloqueada por permisos).
+- **Siguiente**: merge del PR #5.
