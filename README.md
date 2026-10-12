@@ -81,9 +81,9 @@ Abrir `http://localhost:4200` e ingresar con el operador de prueba configurado e
 
 **Qué hace la pantalla:** tarjetas por parqueadero con color por estado (verde disponible, rojo ocupado con placa, visitante, apto/casa y tiempo transcurrido, gris fuera de servicio), búsqueda por parqueadero, placa, visitante o apartamento (sin importar mayúsculas, tildes ni guiones) combinada con el filtro por estado con contadores, registro de ingreso con vista previa de la placa normalizada, salida con confirmación y la tabla de vehículos dentro. Se actualiza sola después de cada acción y cada 30 s (se pausa si la pestaña no está visible), por eso no tiene botón "Actualizar"; solo ofrece "Reintentar" si la carga falla. El destino se rotula "Apto/casa": en Colombia "unidad" se entiende como el conjunto residencial. Capturas reales en [`docs/screenshots/`](docs/screenshots/).
 
-| Tablero (filtro "Ocupados") | Placa ya dentro (error del backend) |
-|---|---|
-| ![Tablero](docs/screenshots/01-tablero-filtro-ocupados.jpg) | ![Error placa](docs/screenshots/03-ingreso-placa-ya-dentro.jpg) |
+| Tablero (filtro "Ocupados") | Búsqueda ("maria" encuentra a "María") | Placa ya dentro (error del backend) |
+|---|---|---|
+| ![Tablero](docs/screenshots/01-tablero-filtro-ocupados.jpg) | ![Búsqueda](docs/screenshots/06-busqueda-sin-tildes.jpg) | ![Error placa](docs/screenshots/03-ingreso-placa-ya-dentro.jpg) |
 
 ## Ejecutar las pruebas
 
