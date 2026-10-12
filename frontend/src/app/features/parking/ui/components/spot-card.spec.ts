@@ -49,6 +49,14 @@ describe('SpotCard', () => {
     expect(text).toContain('hace 2 h 5 min');
   });
 
+  it('labels the destination as apartment or house, not as the residential unit', async () => {
+    // En Colombia "unidad" es el conjunto completo (unidad residencial); el portero lo leería mal.
+    const text = (await render(occupied)).nativeElement.textContent as string;
+
+    expect(text).toContain('Apto/casa');
+    expect(text).not.toContain('Unidad');
+  });
+
   it('emits checkIn when registering an entry on an available spot', async () => {
     const fixture = await render(available);
     const emitted = vi.fn();

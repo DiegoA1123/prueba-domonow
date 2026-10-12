@@ -29,6 +29,7 @@ import {
   SpotFilter,
 } from '../domain/parking.models';
 import { ParkingRepository } from '../domain/parking.repository';
+import { matchesSearch } from '../domain/spot-search';
 
 export const POLL_INTERVAL_MS = 30_000;
 export const LOAD_TIMEOUT_MS = 10_000;
@@ -72,6 +73,7 @@ export class ParkingStore {
   readonly #now = signal(Date.now());
 
   readonly filter = signal<SpotFilter>('All');
+  readonly search = signal('');
   readonly spots = this.#spots.asReadonly();
   readonly activeAssignments = this.#activeAssignments.asReadonly();
   readonly loadState = this.#loadState.asReadonly();
@@ -94,8 +96,10 @@ export class ParkingStore {
 
   readonly visibleSpots = computed(() => {
     const filter = this.filter();
-    const spots = this.#spots();
-    return filter === 'All' ? spots : spots.filter((spot) => spot.status === filter);
+    const search = this.search();
+    return this.#spots().filter(
+      (spot) => (filter === 'All' || spot.status === filter) && matchesSearch(spot, search),
+    );
   });
 
   readonly isInitialLoading = computed(

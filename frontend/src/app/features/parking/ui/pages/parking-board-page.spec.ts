@@ -62,6 +62,47 @@ describe('ParkingBoardPage', () => {
     expect(dialog.openDialogs.length).toBe(0);
   });
 
+  function buttonLabels(fixture: { nativeElement: unknown }): string[] {
+    return Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button')).map(
+      (button) => button.textContent?.trim() ?? '',
+    );
+  }
+
+  it('has no manual refresh button: the board refreshes by itself', async () => {
+    const fixture = TestBed.createComponent(ParkingBoardPage);
+    await vi.advanceTimersByTimeAsync(0);
+    fixture.detectChanges();
+
+    expect(buttonLabels(fixture)).not.toContain('Actualizar');
+  });
+
+  it('still offers to retry when the board cannot be loaded', async () => {
+    repository.spotsResponse = () => throwError(() => new HttpErrorResponse({ status: 0 }));
+    const fixture = TestBed.createComponent(ParkingBoardPage);
+    await vi.advanceTimersByTimeAsync(0);
+    fixture.detectChanges();
+
+    expect(buttonLabels(fixture)).toContain('Reintentar');
+  });
+
+  it('filters the cards as the operator types and says when nothing matches', async () => {
+    const fixture = TestBed.createComponent(ParkingBoardPage);
+    await vi.advanceTimersByTimeAsync(0);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+    const search = element.querySelector<HTMLInputElement>('input[type="search"]');
+    if (!search) {
+      throw new Error('search input not rendered');
+    }
+
+    search.value = 'p99';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(element.querySelectorAll('app-spot-card')).toHaveLength(0);
+    expect(element.textContent).toContain('Ningún parqueadero coincide con «p99»');
+  });
+
   it('does not claim the property is empty when the first load fails', async () => {
     repository.spotsResponse = () => throwError(() => new HttpErrorResponse({ status: 0 }));
     const fixture = TestBed.createComponent(ParkingBoardPage);

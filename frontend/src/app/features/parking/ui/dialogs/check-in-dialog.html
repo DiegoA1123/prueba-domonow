@@ -27,8 +27,13 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Unidad que visita</mat-label>
-      <input matInput [formField]="checkInForm.destinationUnit" autocomplete="off" />
+      <mat-label>Apartamento o casa que visita</mat-label>
+      <input
+        matInput
+        [formField]="checkInForm.destinationUnit"
+        autocomplete="off"
+        placeholder="Ej.: Torre 3 · Apto 502"
+      />
       @for (error of checkInForm.destinationUnit().errors(); track $index) {
         <mat-error>{{ error.message }}</mat-error>
       }

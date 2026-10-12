@@ -114,6 +114,19 @@ describe('ParkingStore', () => {
     expect(store.visibleSpots().map((s) => s.code)).toEqual(['P02']);
   });
 
+  it('narrows the visible spots by search text within the selected filter', async () => {
+    await vi.advanceTimersByTimeAsync(0);
+
+    store.search.set('xyz');
+    expect(store.visibleSpots().map((s) => s.code)).toEqual(['P02']);
+
+    store.filter.set('Available');
+    expect(store.visibleSpots()).toEqual([]);
+
+    store.search.set('');
+    expect(store.visibleSpots().map((s) => s.code)).toEqual(['P01']);
+  });
+
   it('polls again every 30 seconds', async () => {
     await vi.advanceTimersByTimeAsync(0);
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS);

@@ -150,15 +150,15 @@ frontend/src/app/
 │   └── notifications/notifier.ts# Avisos (MatSnackBar)
 ├── features/
 │   └── parking/
-│       ├── domain/              # parking.models.ts (MISMO lenguaje ubicuo), license-plate.ts (espejo de UX del VO),
+│       ├── domain/              # parking.models.ts (MISMO lenguaje ubicuo), license-plate.ts (espejo de UX del VO), spot-search.ts (búsqueda),
 │       │                        #   parking.repository.ts = PUERTO (abstract class)
-│       ├── application/         # parking.store.ts: estado en signals, computed (contadores, filtro),
+│       ├── application/         # parking.store.ts: estado en signals, computed (contadores, filtro, búsqueda),
 │       │                        #   polling RxJS visible-aware → signals, checkIn/checkOut
 │       ├── infrastructure/      # ADAPTADOR: parking-http.repository.ts + parking-api.dto.ts + parking.mapper.ts
 │       └── ui/
 │           ├── pages/parking-board-page.*       # contenedor: provee ParkingStore, abre diálogos
 │           ├── dialogs/check-in-dialog.*        # Signal Forms + vista previa reactiva de la placa
-│           └── components/ spot-card · status-filter · active-vehicles-table   # presentacionales
+│           └── components/ spot-card · spot-search-field · status-filter · active-vehicles-table   # presentacionales
 └── shared/                      # format-elapsed ("hace 2 h 5 min"), confirm-dialog
 ```
 
