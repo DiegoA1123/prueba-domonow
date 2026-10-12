@@ -9,7 +9,7 @@ Solución Full Stack para la prueba técnica de OFIMA SAS: registrar el ingreso 
 | Seguridad | JWT Bearer · PasswordHasher (PBKDF2) · user-secrets |
 | Pruebas | xUnit · Shouldly · WebApplicationFactory + PostgreSQL real |
 
-> 🚧 En construcción. Estado detallado en [`docs/PROGRESS.md`](docs/PROGRESS.md).
+> Historial de trabajo, decisiones y verificaciones en [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 ## Requisitos previos
 
